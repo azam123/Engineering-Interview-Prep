@@ -5,7 +5,7 @@
 [![GenAI](https://img.shields.io/badge/GenAI-RAG-6A1B9A)](#topics)
 [![Interview Prep](https://img.shields.io/badge/Focus-Interview%20Preparation-success)](#how-to-use-this-repository)
 [![Daily Updates](https://img.shields.io/badge/Updates-Daily-orange)](#daily-learning-plan)
-[![DSA](https://img.shields.io/badge/DSA-LeetCode%20Top%20150-FFA116?logo=leetcode&logoColor=black)](https://leetcode.com/studyplan/top-interview-150/)
+[![DSA](https://img.shields.io/badge/DSA-LeetCode%20Top%20Interview%20150-FFA116?logo=leetcode&logoColor=black)](https://leetcode.com/studyplan/top-interview-150/)
 
 A practical, continuously improving interview-preparation knowledge base for **backend engineers, Principal Engineers, Solution Architects, cloud engineers, and GenAI engineers**.
 
@@ -30,17 +30,21 @@ A practical, continuously improving interview-preparation knowledge base for **b
 | 9 | [Azure Data Factory](09-Azure-Data-Factory.md) | ETL/ELT, incremental loads, triggers, CI/CD |
 | 10 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
 
-## 🧠 DSA Practice
+## 🧠 DSA — LeetCode Top Interview 150
 
-Follow the official [LeetCode Top Interview 150 study plan](https://leetcode.com/studyplan/top-interview-150/). The repository documents each problem with a consistent interview-oriented format:
+Use the **official LeetCode Top Interview 150** as the canonical problem list: [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/). LeetCode describes it as a set of 150 classic interview questions covering comprehensive interview topics. citeturn0search0
+
+The repository documents each problem using a consistent interview-first format:
 
 - Problem link, difficulty, topic, pattern, data structure and algorithm
 - Explanation with examples and interviewer clarifying questions
-- Brute-force and optimized solutions with complexity analysis
-- Dry runs and further optimization discussion
-- C# implementation
+- Brute-force approach, C# solution and complexity
+- Brute-force drawbacks and bottleneck analysis
+- Optimized approach, C# solution and complexity
+- Dry run and edge cases
+- Further optimization discussion where applicable
 
-**Current progress:** 3 / 150 documented. See the [DSA problem index](DSA-LeetCode-150/README.md).
+**Current progress:** **7 / 150** documented. See the [DSA problem index](DSA-LeetCode-150/README.md).
 
 ## 🔄 Learning Flow
 
@@ -67,15 +71,16 @@ Each topic is progressively enhanced with:
 
 ## 🗓️ Daily Learning Plan
 
-The content is intended to grow through daily additions. Each update should add non-duplicated questions, practical explanations, diagrams, and production trade-offs across the topic areas.
+The content is intended to grow through daily additions. DSA solutions should be added incrementally without duplicating existing problems, while keeping the problem index synchronized with the solution files.
 
 Suggested daily routine:
 
 1. Read 5–10 questions.
 2. Explain answers aloud in 60–120 seconds.
 3. Implement or modify one code example.
-4. Draw the architecture from memory.
-5. Record trade-offs and follow-up questions.
+4. Solve one DSA problem from the current index.
+5. Draw the architecture from memory.
+6. Record trade-offs and follow-up questions.
 
 ## 🧭 Interview Answer Framework
 
