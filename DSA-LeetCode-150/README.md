@@ -4,7 +4,7 @@ A structured, interview-focused C# solution guide for the official [LeetCode Top
 
 ## Progress
 
-- Completed: **11 / 150**
+- Completed: **9 / 150**
 - Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution
 - Goal: build interview-ready problem-solving skills by recognizing reusable DSA patterns rather than memorizing solutions.
 
@@ -20,9 +20,7 @@ A structured, interview-focused C# solution guide for the official [LeetCode Top
 | 6 | [Valid Anagram](06-valid-anagram.md) | Easy | String, Hash Table | ✅ |
 | 7 | [3Sum](07-3sum.md) | Medium | Array, Sorting, Two Pointers | ✅ |
 | 8 | [Contains Duplicate](08-contains-duplicate.md) | Easy | Array, Hash Set | ✅ |
-| 9 | [Valid Anagram](09-valid-anagram.md) | Easy | String, Hash Map | ✅ |
-| 10 | [Best Time to Buy and Sell Stock](10-best-time-to-buy-and-sell-stock.md) | Easy | Array, Greedy | ✅ |
-| 11 | [Binary Search](11-binary-search.md) | Easy | Array, Binary Search | ✅ |
+| 9 | [Binary Search](11-binary-search.md) | Easy | Array, Binary Search | ✅ |
 
 ## Required Format for Every Problem
 
