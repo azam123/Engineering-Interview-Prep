@@ -1,0 +1,1 @@
+public static class HappyNumber{static int Next(int n){int sum=0;while(n>0){int d=n%10;sum+=d*d;n/=10;}return sum;}public static bool IsHappy(int n){int slow=n,fast=Next(n);while(fast!=1&&slow!=fast){slow=Next(slow);fast=Next(Next(fast));}return fast==1;}}
