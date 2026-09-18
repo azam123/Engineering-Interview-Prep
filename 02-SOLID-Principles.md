@@ -58,45 +58,15 @@ public sealed class NoDiscount : IDiscountPolicy
 }
 ```
 
-## L — Liskov Substitution Principle
+## Liskov Substitution Principle
 
 A subtype must honor the behavioral contract of its base abstraction. If a subtype cannot support an operation, the abstraction may be incorrect.
 
-**Warning sign:** subclasses frequently throw `NotSupportedException`, weaken validation, or return surprising results.
-
-Prefer capability-based interfaces when behavior differs:
-
-```csharp
-public interface IReadable
-{
-    string Read();
-}
-
-public interface IWritable
-{
-    void Write(string value);
-}
-```
-
-## I — Interface Segregation Principle
+## Interface Segregation Principle
 
 Clients should not depend on methods they do not need.
 
-```csharp
-public interface IReportReader
-{
-    Task<Report> GetAsync(Guid id, CancellationToken ct);
-}
-
-public interface IReportWriter
-{
-    Task SaveAsync(Report report, CancellationToken ct);
-}
-```
-
-Small interfaces improve substitution and make unit tests more focused. Do not split interfaces merely to reduce the number of methods; cohesion matters.
-
-## D — Dependency Inversion Principle
+## Dependency Inversion Principle
 
 High-level business rules should depend on abstractions rather than concrete infrastructure implementations.
 
@@ -111,12 +81,6 @@ public sealed class OrderService(INotifier notifier)
     public Task NotifyAsync(CancellationToken ct) =>
         notifier.SendAsync("Order created", ct);
 }
-```
-
-The composition root wires the implementation:
-
-```csharp
-builder.Services.AddScoped<INotifier, EmailNotifier>();
 ```
 
 ## Common interview questions
@@ -137,6 +101,36 @@ Separation of concerns is the broader idea of isolating different concerns. SRP 
 - Hiding simple logic behind unnecessary factories.
 - Treating principles as rigid rules instead of trade-offs.
 
+## Principal Engineer scenario: a codebase has 40 interfaces for 40 classes
+Do not defend the design by saying “SOLID requires interfaces.” Inspect why abstractions exist. Keep interfaces at boundaries where implementations vary or need isolation, collapse pass-through abstractions, and favor cohesive modules. The architectural goal is controlled change, not maximum interface count.
+
+```mermaid
+flowchart TD
+    UC[Use Case] --> PORT[Stable Application Port]
+    PORT --> AD1[SQL Adapter]
+    PORT --> AD2[Queue Adapter]
+    PORT --> AD3[External API Adapter]
+```
+
+### Scenario: a payment provider changes its SDK every quarter
+Use an anti-corruption/adapter boundary around the vendor SDK. Keep domain models independent of vendor types, contract-test the adapter, and make provider replacement possible without changing business rules.
+
+```csharp
+public interface IPaymentGateway
+{
+    Task<PaymentResult> AuthorizeAsync(Money amount, CancellationToken ct);
+}
+
+public sealed class VendorPaymentAdapter(VendorClient client) : IPaymentGateway
+{
+    public async Task<PaymentResult> AuthorizeAsync(Money amount, CancellationToken ct)
+    {
+        var response = await client.AuthorizeAsync(amount.Value, amount.Currency, ct);
+        return new PaymentResult(response.Success, response.Reference);
+    }
+}
+```
+
 ## Quick review table
 
 | Principle | Interview keyword | Typical smell |
@@ -151,3 +145,4 @@ Separation of concerns is the broader idea of isolating different concerns. SRP 
 
 - [Microsoft dependency injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection)
 - [Microsoft architecture guidance](https://learn.microsoft.com/en-us/dotnet/architecture/)
+- [Microsoft .NET dependency inversion guidance](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design)
