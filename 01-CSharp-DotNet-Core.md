@@ -216,6 +216,47 @@ Use cancellation tokens, stop accepting new work, allow in-flight operations to 
 
 Avoid mocking every internal implementation detail. Prefer testing observable behavior.
 
+## 17. Principal Engineer scenario: API has high p99 latency only during traffic spikes
+
+**Answer:** Do not immediately add more application instances. First correlate p99 with CPU, thread-pool starvation, GC pauses, downstream latency, connection-pool exhaustion, and database waits. Then identify the limiting resource and scale that layer. Add bounded concurrency and caching where appropriate, protect dependencies with timeouts/circuit breakers, and validate with load tests.
+
+```mermaid
+flowchart LR
+    C[Clients] --> G[API Gateway]
+    G --> API[ASP.NET Core]
+    API --> CACHE[(Cache)]
+    API --> DB[(SQL Database)]
+    API --> EXT[External API]
+    API --> OBS[Metrics + Traces]
+```
+
+**Follow-up:** Explain what happens if the cache is unavailable. A strong answer treats cache as an optimization unless the architecture explicitly makes it a dependency.
+
+## 18. Practical example: bounded parallelism
+
+Avoid `Task.WhenAll` over an unbounded collection. Limit concurrency when calling a dependency.
+
+```csharp
+public static async Task ProcessAsync(
+    IEnumerable<int> ids,
+    Func<int, CancellationToken, Task> handler,
+    int maxConcurrency,
+    CancellationToken ct)
+{
+    using var gate = new SemaphoreSlim(maxConcurrency);
+    var tasks = ids.Select(async id =>
+    {
+        await gate.WaitAsync(ct);
+        try { await handler(id, ct); }
+        finally { gate.Release(); }
+    });
+
+    await Task.WhenAll(tasks);
+}
+```
+
+The correct limit is workload-dependent; measure downstream saturation rather than choosing a large arbitrary number.
+
 ## References
 
 - [C# documentation](https://learn.microsoft.com/en-us/dotnet/csharp/)
@@ -224,3 +265,4 @@ Avoid mocking every internal implementation detail. Prefer testing observable be
 - [Dependency injection in .NET](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection)
 - [ASP.NET Core error handling](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling)
 - [HttpClientFactory](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-requests)
+- [ASP.NET Core performance best practices](https://learn.microsoft.com/en-us/aspnet/core/performance/performance-best-practices)
