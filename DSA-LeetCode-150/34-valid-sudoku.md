@@ -1,0 +1,12 @@
+# 34. Valid Sudoku
+- **Problem:** https://leetcode.com/problems/valid-sudoku/ | **Difficulty:** Medium
+- **Topic/Pattern:** Matrix, Hash Set, Constraint Checking
+- **Explanation:** Each row, column, and 3×3 box must contain no duplicate digits.
+- **Flow:** `Scan cell → Build row/column/box key → Reject duplicate`
+- **Clarifying Questions:** Are blanks represented by `.`? Is the board always 9×9?
+- **Brute Force:** Compare each value with every other value in its row, column, and box: O(81²) time, O(1) space.
+- **Optimized:** Use three sets per row, column, and box. Time O(1) for fixed board, or O(n²); space O(n²).
+- **Dry Run:** A repeated `5` in the same box immediately returns false.
+- **Further Optimization:** Bit masks can reduce constant factors.
+- **Code:** [`34-valid-sudoku.cs`](./34-valid-sudoku.cs)
+- **Code Walkthrough:** `box = (r / 3) * 3 + c / 3` maps each cell to its 3×3 region. Sets enforce uniqueness.
