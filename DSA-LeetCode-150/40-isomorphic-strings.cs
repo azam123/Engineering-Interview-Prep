@@ -1,0 +1,1 @@
+public static class IsomorphicStrings{public static bool Check(string s,string t){if(s.Length!=t.Length)return false;int[] a=new int[256],b=new int[256];for(int i=0;i<s.Length;i++){if(a[s[i]]!=b[t[i]])return false;a[s[i]]=b[t[i]]=i+1;}return true;}}
