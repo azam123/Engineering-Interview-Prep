@@ -4,17 +4,17 @@
 [![GitHub forks](https://img.shields.io/github/forks/azam123/Engineering-Interview-Prep?style=for-the-badge&logo=github)](https://github.com/azam123/Engineering-Interview-Prep/network/members)
 [![C#](https://img.shields.io/badge/Language-C%23-512BD4?style=for-the-badge&logo=csharp)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![LeetCode](https://img.shields.io/badge/Practice-LeetCode-FFA116?style=for-the-badge&logo=leetcode)](https://leetcode.com/studyplan/top-interview-150/)
-[![Progress](https://img.shields.io/badge/Progress-11%2F150-blue?style=for-the-badge)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-15%2F150-blue?style=for-the-badge)](#progress)
 
 A structured, interview-focused C# solution guide for the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) study plan.
 
 ## 🏷️ Topics / Tags
 
-`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing`
+`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing` `String`
 
 ## Progress
 
-- Completed: **11 / 150**
+- Completed: **15 / 150**
 - Each problem contains a Markdown explanation and a matching `.cs` implementation.
 - Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution.
 
@@ -30,9 +30,13 @@ A structured, interview-focused C# solution guide for the official [LeetCode Top
 | 6 | [Valid Anagram](06-valid-anagram.md) | Easy | String, Hash Table | MD + CS |
 | 7 | [3Sum](07-3sum.md) | Medium | Array, Sorting, Two Pointers | MD + CS |
 | 8 | [Contains Duplicate](08-contains-duplicate.md) | Easy | Array, Hash Set | MD + CS |
-| 9 | [Binary Search](11-binary-search.md) | Easy | Array, Binary Search | MD + CS |
+| 9 | [Binary Search](09-binary-search.md) | Easy | Array, Binary Search | MD + CS |
 | 10 | [Container With Most Water](10-container-with-most-water.md) | Medium | Array, Two Pointers | MD + CS |
 | 11 | [Jump Game](11-jump-game.md) | Medium | Array, Greedy | MD + CS |
+| 12 | [Roman to Integer](12-roman-to-integer.md) | Easy | String, Hashing | MD + CS |
+| 13 | [Length of Last Word](13-length-of-last-word.md) | Easy | String | MD + CS |
+| 14 | [Longest Common Prefix](14-longest-common-prefix.md) | Easy | String, Array | MD + CS |
+| 15 | [3Sum Closest](15-three-sum-closest.md) | Medium | Array, Sorting, Two Pointers | MD + CS |
 
 ## Required Format for Every Problem
 
