@@ -4,17 +4,17 @@
 [![GitHub forks](https://img.shields.io/github/forks/azam123/Engineering-Interview-Prep?style=for-the-badge&logo=github)](https://github.com/azam123/Engineering-Interview-Prep/network/members)
 [![C#](https://img.shields.io/badge/Language-C%23-512BD4?style=for-the-badge&logo=csharp)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![LeetCode](https://img.shields.io/badge/Practice-LeetCode-FFA116?style=for-the-badge&logo=leetcode)](https://leetcode.com/studyplan/top-interview-150/)
-[![Progress](https://img.shields.io/badge/Progress-17%2F150-blue?style=for-the-badge)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-20%2F150-blue?style=for-the-badge)](#progress)
 
 A structured, interview-focused C# solution guide for the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) study plan.
 
 ## 🏷️ Topics / Tags
 
-`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing` `String`
+`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing` `String` `Binary Search` `Dynamic Programming`
 
 ## Progress
 
-- Completed: **17 / 150**
+- Completed: **20 / 150**
 - Each problem contains a Markdown explanation and a matching `.cs` implementation.
 - Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution.
 
@@ -39,6 +39,9 @@ A structured, interview-focused C# solution guide for the official [LeetCode Top
 | 15 | [3Sum Closest](15-three-sum-closest.md) | Medium | Array, Sorting, Two Pointers | MD + CS |
 | 16 | [Remove Duplicates from Sorted Array](16-remove-duplicates-from-sorted-array.md) | Easy | Array, Two Pointers | MD + CS |
 | 17 | [Remove Element](17-remove-element.md) | Easy | Array, Two Pointers | MD + CS |
+| 18 | [Search Insert Position](18-search-insert-position.md) | Easy | Array, Binary Search | MD + CS |
+| 19 | [Maximum Subarray](19-maximum-subarray.md) | Medium | Array, Dynamic Programming | MD + CS |
+| 20 | [Maximum Product Subarray](20-maximum-product-subarray.md) | Medium | Array, Dynamic Programming | MD + CS |
 
 ## Required Format for Every Problem
 
