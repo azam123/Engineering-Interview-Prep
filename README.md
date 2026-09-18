@@ -5,6 +5,7 @@
 [![GenAI](https://img.shields.io/badge/GenAI-RAG-6A1B9A)](#topics)
 [![Interview Prep](https://img.shields.io/badge/Focus-Interview%20Preparation-success)](#how-to-use-this-repository)
 [![Daily Updates](https://img.shields.io/badge/Updates-Daily-orange)](#daily-learning-plan)
+[![DSA](https://img.shields.io/badge/DSA-LeetCode%20Top%20150-FFA116?logo=leetcode&logoColor=black)](https://leetcode.com/studyplan/top-interview-150/)
 
 A practical, continuously improving interview-preparation knowledge base for **backend engineers, Principal Engineers, Solution Architects, cloud engineers, and GenAI engineers**.
 
@@ -12,7 +13,7 @@ A practical, continuously improving interview-preparation knowledge base for **b
 
 ## 🏷️ Repository Tags
 
-`csharp` `dotnet` `aspnetcore` `python` `sql` `azure` `paas` `data-factory` `system-design` `microservices` `distributed-systems` `genai` `rag` `llm` `principal-engineer` `solution-architect` `interview-preparation`
+`csharp` `dotnet` `aspnetcore` `python` `sql` `azure` `paas` `data-factory` `system-design` `microservices` `distributed-systems` `genai` `rag` `llm` `dsa` `leetcode` `principal-engineer` `solution-architect` `interview-preparation`
 
 ## 📚 Topics
 
@@ -27,6 +28,19 @@ A practical, continuously improving interview-preparation knowledge base for **b
 | 7 | [SQL](07-SQL-Interview-QA.md) | Querying, indexing, transactions, optimization |
 | 8 | [Azure PaaS](08-Azure-PAAS-Interview-QA.md) | Azure services, identity, networking, observability |
 | 9 | [Azure Data Factory](09-Azure-Data-Factory.md) | ETL/ELT, incremental loads, triggers, CI/CD |
+| 10 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
+
+## 🧠 DSA Practice
+
+Follow the official [LeetCode Top Interview 150 study plan](https://leetcode.com/studyplan/top-interview-150/). The repository documents each problem with a consistent interview-oriented format:
+
+- Problem link, difficulty, topic, pattern, data structure and algorithm
+- Explanation with examples and interviewer clarifying questions
+- Brute-force and optimized solutions with complexity analysis
+- Dry runs and further optimization discussion
+- C# implementation
+
+**Current progress:** 3 / 150 documented. See the [DSA problem index](DSA-LeetCode-150/README.md).
 
 ## 🔄 Learning Flow
 
@@ -79,3 +93,4 @@ Clarify Requirements → State Assumptions → Propose Design → Explain Data F
 - [Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/)
 - [Python Documentation](https://docs.python.org/3/)
 - [SQL Server Documentation](https://learn.microsoft.com/en-us/sql/)
+- [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/)
