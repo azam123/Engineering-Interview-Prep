@@ -1,0 +1,1 @@
+public static class RansomNote{public static bool CanConstruct(string r,string m){int[] f=new int[26];foreach(char c in m)f[c-'a']++;foreach(char c in r)if(--f[c-'a']<0)return false;return true;}}
