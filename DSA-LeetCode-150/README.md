@@ -1,10 +1,10 @@
 # 🧠 LeetCode Top Interview 150
 
-A structured, interview-focused C# solution guide for the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) study plan. LeetCode describes this plan as 150 classic interview questions covering comprehensive interview topics. citeturn0search0
+A structured, interview-focused C# solution guide for the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) study plan.
 
 ## Progress
 
-- Completed: **7 / 150**
+- Completed: **11 / 150**
 - Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution
 - Goal: build interview-ready problem-solving skills by recognizing reusable DSA patterns rather than memorizing solutions.
 
@@ -19,6 +19,10 @@ A structured, interview-focused C# solution guide for the official [LeetCode Top
 | 5 | [Valid Palindrome](05-valid-palindrome.md) | Easy | String, Two Pointers | ✅ |
 | 6 | [Valid Anagram](06-valid-anagram.md) | Easy | String, Hash Table | ✅ |
 | 7 | [3Sum](07-3sum.md) | Medium | Array, Sorting, Two Pointers | ✅ |
+| 8 | [Contains Duplicate](08-contains-duplicate.md) | Easy | Array, Hash Set | ✅ |
+| 9 | [Valid Anagram](09-valid-anagram.md) | Easy | String, Hash Map | ✅ |
+| 10 | [Best Time to Buy and Sell Stock](10-best-time-to-buy-and-sell-stock.md) | Easy | Array, Greedy | ✅ |
+| 11 | [Binary Search](11-binary-search.md) | Easy | Array, Binary Search | ✅ |
 
 ## Required Format for Every Problem
 
@@ -89,7 +93,7 @@ As the collection grows, solutions will be organized around reusable patterns in
 
 ## Official Study Plan
 
-Use the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) as the canonical problem list. The exact problem set can evolve, so the repository should periodically be checked against the official plan. citeturn0search0
+Use the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) as the canonical problem list. The exact problem set can evolve, so the repository should periodically be checked against the official plan.
 
 ## Progress Tracking
 
