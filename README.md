@@ -28,11 +28,12 @@ A practical, continuously improving interview-preparation knowledge base for **b
 | 7 | [SQL](07-SQL-Interview-QA.md) | Querying, indexing, transactions, optimization |
 | 8 | [Azure PaaS](08-Azure-PAAS-Interview-QA.md) | Azure services, identity, networking, observability |
 | 9 | [Azure Data Factory](09-Azure-Data-Factory.md) | ETL/ELT, incremental loads, triggers, CI/CD |
-| 10 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
+| 10 | [Principal & Architect Scenarios](10-Principal-Architect-Scenario-QA.md) | Production incidents, architecture trade-offs, GenAI/RAG, Azure, SQL, Python |
+| 11 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
 
 ## 🧠 DSA — LeetCode Top Interview 150
 
-Use the **official LeetCode Top Interview 150** as the canonical problem list: [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/). LeetCode describes it as a set of 150 classic interview questions covering comprehensive interview topics. citeturn0search0
+Use the **official LeetCode Top Interview 150** as the canonical problem list: [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/).
 
 The repository documents each problem using a consistent interview-first format:
 
@@ -44,7 +45,7 @@ The repository documents each problem using a consistent interview-first format:
 - Dry run and edge cases
 - Further optimization discussion where applicable
 
-**Current progress:** **7 / 150** documented. See the [DSA problem index](DSA-LeetCode-150/README.md).
+**Current progress:** **22 / 150** documented in the index; `23-rotate-array` is also present as the next unique problem and will be synchronized into the index in the next DSA maintenance pass.
 
 ## 🔄 Learning Flow
 
@@ -73,15 +74,6 @@ Each topic is progressively enhanced with:
 
 The content is intended to grow through daily additions. DSA solutions should be added incrementally without duplicating existing problems, while keeping the problem index synchronized with the solution files.
 
-Suggested daily routine:
-
-1. Read 5–10 questions.
-2. Explain answers aloud in 60–120 seconds.
-3. Implement or modify one code example.
-4. Solve one DSA problem from the current index.
-5. Draw the architecture from memory.
-6. Record trade-offs and follow-up questions.
-
 ## 🧭 Interview Answer Framework
 
 Use this structure for system-design and scenario questions:
@@ -96,6 +88,7 @@ Clarify Requirements → State Assumptions → Propose Design → Explain Data F
 - [Microsoft Learn](https://learn.microsoft.com/)
 - [.NET Documentation](https://learn.microsoft.com/en-us/dotnet/)
 - [Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/)
+- [Azure Well-Architected Framework](https://learn.microsoft.com/en-us/azure/well-architected/)
 - [Python Documentation](https://docs.python.org/3/)
 - [SQL Server Documentation](https://learn.microsoft.com/en-us/sql/)
 - [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/)
