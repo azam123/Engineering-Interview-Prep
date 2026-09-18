@@ -1,0 +1,12 @@
+# 35. Spiral Matrix
+- **Problem:** https://leetcode.com/problems/spiral-matrix/ | **Difficulty:** Medium
+- **Topic/Pattern:** Matrix, Boundary Traversal
+- **Explanation:** Maintain `top`, `bottom`, `left`, and `right`; traverse four sides and shrink boundaries.
+- **Flow:** `Top row → Right column → Bottom row → Left column → Shrink`
+- **Clarifying Questions:** Can the matrix be empty or rectangular?
+- **Brute Force:** Visit cells while tracking a visited matrix: O(mn) time, O(mn) space.
+- **Optimized:** Boundary traversal uses O(mn) time and O(1) auxiliary space.
+- **Dry Run:** A 3×3 matrix is read clockwise in layers.
+- **Further Optimization:** Not needed asymptotically.
+- **Code:** [`35-spiral-matrix.cs`](./35-spiral-matrix.cs)
+- **Code Walkthrough:** After each directional traversal, update the corresponding boundary and check whether bounds crossed.
