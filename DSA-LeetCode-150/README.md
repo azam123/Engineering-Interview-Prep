@@ -1,74 +1,59 @@
 # 🧠 LeetCode Top Interview 150
 
+[![GitHub stars](https://img.shields.io/github/stars/azam123/Engineering-Interview-Prep?style=for-the-badge&logo=github)](https://github.com/azam123/Engineering-Interview-Prep/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/azam123/Engineering-Interview-Prep?style=for-the-badge&logo=github)](https://github.com/azam123/Engineering-Interview-Prep/network/members)
+[![C#](https://img.shields.io/badge/Language-C%23-512BD4?style=for-the-badge&logo=csharp)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+[![LeetCode](https://img.shields.io/badge/Practice-LeetCode-FFA116?style=for-the-badge&logo=leetcode)](https://leetcode.com/studyplan/top-interview-150/)
+[![Progress](https://img.shields.io/badge/Progress-11%2F150-blue?style=for-the-badge)](#progress)
+
 A structured, interview-focused C# solution guide for the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) study plan.
+
+## 🏷️ Topics / Tags
+
+`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing`
 
 ## Progress
 
-- Completed: **9 / 150**
-- Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution
-- Goal: build interview-ready problem-solving skills by recognizing reusable DSA patterns rather than memorizing solutions.
+- Completed: **11 / 150**
+- Each problem contains a Markdown explanation and a matching `.cs` implementation.
+- Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution.
 
 ## Problem Index
 
-| # | Problem | Difficulty | Topic | Status |
+| # | Problem | Difficulty | Topic | Files |
 |---|---|---|---|---|
-| 1 | [Two Sum](01-two-sum.md) | Easy | Array, Hash Map | ✅ |
-| 2 | [Valid Parentheses](02-valid-parentheses.md) | Easy | Stack | ✅ |
-| 3 | [Merge Sorted Array](03-merge-sorted-array.md) | Easy | Array, Two Pointers | ✅ |
-| 4 | [Best Time to Buy and Sell Stock](04-best-time-to-buy-and-sell-stock.md) | Easy | Array, Greedy, DP | ✅ |
-| 5 | [Valid Palindrome](05-valid-palindrome.md) | Easy | String, Two Pointers | ✅ |
-| 6 | [Valid Anagram](06-valid-anagram.md) | Easy | String, Hash Table | ✅ |
-| 7 | [3Sum](07-3sum.md) | Medium | Array, Sorting, Two Pointers | ✅ |
-| 8 | [Contains Duplicate](08-contains-duplicate.md) | Easy | Array, Hash Set | ✅ |
-| 9 | [Binary Search](11-binary-search.md) | Easy | Array, Binary Search | ✅ |
+| 1 | [Two Sum](01-two-sum.md) | Easy | Array, Hash Map | MD + CS |
+| 2 | [Valid Parentheses](02-valid-parentheses.md) | Easy | Stack | MD + CS |
+| 3 | [Merge Sorted Array](03-merge-sorted-array.md) | Easy | Array, Two Pointers | MD + CS |
+| 4 | [Best Time to Buy and Sell Stock](04-best-time-to-buy-and-sell-stock.md) | Easy | Array, Greedy | MD + CS |
+| 5 | [Valid Palindrome](05-valid-palindrome.md) | Easy | String, Two Pointers | MD + CS |
+| 6 | [Valid Anagram](06-valid-anagram.md) | Easy | String, Hash Table | MD + CS |
+| 7 | [3Sum](07-3sum.md) | Medium | Array, Sorting, Two Pointers | MD + CS |
+| 8 | [Contains Duplicate](08-contains-duplicate.md) | Easy | Array, Hash Set | MD + CS |
+| 9 | [Binary Search](11-binary-search.md) | Easy | Array, Binary Search | MD + CS |
+| 10 | [Container With Most Water](10-container-with-most-water.md) | Medium | Array, Two Pointers | MD + CS |
+| 11 | [Jump Game](11-jump-game.md) | Medium | Array, Greedy | MD + CS |
 
 ## Required Format for Every Problem
 
-Every problem should document:
-
-1. **Problem link**
-2. **Difficulty level**
-3. **Topic**
-4. **Pattern, data structure and algorithm**
-5. **Problem explanation with examples**
-6. **Clarifying questions to ask the interviewer**
-7. **Brute-force approach and C# solution**
-8. **Brute-force pattern/DSA, time and space complexity**
-9. **Drawback of the brute-force solution**
-10. **Optimized approach and C# solution**
-11. **Optimized time and space complexity**
-12. **Dry run**
-13. **Further optimization, when applicable**
+1. Problem link, difficulty, topic and pattern
+2. Data structure and algorithm
+3. Explanation with examples
+4. Clarifying questions
+5. Brute-force approach and C# solution
+6. Brute-force complexity and drawback
+7. Optimized approach and C# solution
+8. Optimized complexity and dry run
+9. Further optimization, if applicable
 
 ## Recommended Interview Workflow
 
 ```text
-Read Problem
-    ↓
-Clarify Requirements
-    ↓
-Identify Pattern
-    ↓
-Explain Brute Force
-    ↓
-Analyze Complexity
-    ↓
-Find Bottleneck
-    ↓
-Optimize Data Structure / Algorithm
-    ↓
-Dry Run With Example
-    ↓
-Code in C#
-    ↓
-Test Edge Cases
-    ↓
-Discuss Trade-offs
+Read → Clarify → Identify Pattern → Brute Force → Complexity
+→ Find Bottleneck → Optimize → Dry Run → Code → Test Edge Cases
 ```
 
 ## Pattern Coverage
-
-As the collection grows, solutions will be organized around reusable patterns including:
 
 - Hash Map / Frequency Counting
 - Two Pointers
@@ -86,13 +71,16 @@ As the collection grows, solutions will be organized around reusable patterns in
 - Topological Sort
 - Union-Find
 - Greedy
-- 1D / 2D Dynamic Programming
+- Dynamic Programming
 - Bit Manipulation
 
 ## Official Study Plan
 
-Use the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) as the canonical problem list. The exact problem set can evolve, so the repository should periodically be checked against the official plan.
+Use the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) as the canonical problem list.
 
-## Progress Tracking
+## Folder Convention
 
-The index is intentionally kept in this folder so that each new solution can be reviewed independently, linked from the index, and counted toward the 150-problem target.
+Each problem is stored as a pair:
+
+- `NN-problem-name.md` — interview explanation, approaches, complexity and dry run.
+- `NN-problem-name.cs` — executable C# solution containing brute-force and optimized methods where practical.
