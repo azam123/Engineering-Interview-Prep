@@ -4,17 +4,17 @@
 [![GitHub forks](https://img.shields.io/github/forks/azam123/Engineering-Interview-Prep?style=for-the-badge&logo=github)](https://github.com/azam123/Engineering-Interview-Prep/network/members)
 [![C#](https://img.shields.io/badge/Language-C%23-512BD4?style=for-the-badge&logo=csharp)](https://learn.microsoft.com/en-us/dotnet/csharp/)
 [![LeetCode](https://img.shields.io/badge/Practice-LeetCode-FFA116?style=for-the-badge&logo=leetcode)](https://leetcode.com/studyplan/top-interview-150/)
-[![Progress](https://img.shields.io/badge/Progress-23%2F150-blue?style=for-the-badge)](#progress)
+[![Progress](https://img.shields.io/badge/Progress-25%2F150-blue?style=for-the-badge)](#progress)
 
 A structured, interview-focused C# solution guide for the official [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/) study plan.
 
 ## 🏷️ Topics / Tags
 
-`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing` `String` `Binary Search` `Dynamic Programming` `Array` `In-Place`
+`C#` `Data Structures` `Algorithms` `LeetCode` `Coding Interview` `FAANG Preparation` `Problem Solving` `Big O` `Greedy` `Two Pointers` `Hashing` `String` `Binary Search` `Dynamic Programming` `Array` `In-Place` `Prefix/Suffix`
 
 ## Progress
 
-- Completed: **23 / 150**
+- Completed: **25 / 150**
 - Each problem contains a Markdown explanation and a matching `.cs` implementation.
 - Format: explanation → clarifying questions → brute force → optimization → dry run → further optimization → C# solution.
 
@@ -45,6 +45,8 @@ A structured, interview-focused C# solution guide for the official [LeetCode Top
 | 21 | [Best Time to Buy and Sell Stock II](21-best-time-to-buy-and-sell-stock-ii.md) | Easy | Array, Greedy | MD + CS |
 | 22 | [Jump Game II](22-jump-game-ii.md) | Medium | Array, Greedy | MD + CS |
 | 23 | [Rotate Array](23-rotate-array.md) | Medium | Array, In-Place | MD + CS |
+| 24 | [Product of Array Except Self](24-Product-of-Array-Except-Self.md) | Medium | Array, Prefix/Suffix | MD + CS |
+| 25 | [Gas Station](25-Gas-Station.md) | Medium | Array, Greedy | MD + CS |
 
 ## Required Format for Every Problem
 
@@ -71,6 +73,7 @@ Read → Clarify → Identify Pattern → Brute Force → Complexity
 - Two Pointers
 - Sliding Window
 - Prefix Sum
+- Prefix / Suffix Products
 - Binary Search
 - Stack / Monotonic Stack
 - Linked List Fast & Slow Pointers
