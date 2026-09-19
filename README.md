@@ -35,24 +35,25 @@ The notes use a consistent colorful and easy-to-follow format:
 | # | Topic | Focus |
 |---|---|---|
 | 1 | [C# and .NET Core](01-CSharp-DotNet-Core.md) | Language, runtime, ASP.NET Core, performance, resilience |
-| 2 | [SOLID Principles](02-SOLID-Principles.md) | Maintainable and testable object-oriented design |
-| 3 | [Top 5 Design Patterns](03-Top-5-Design-Patterns.md) | Reusable object-oriented design solutions |
-| 4 | [Architectural Patterns](04-Architectural-Patterns.md) | Microservices, clean architecture, CQRS, event-driven systems |
-| 5 | [GenAI and RAG](05-GenAI-RAG-Interview-QA.md) | Retrieval, evaluation, security, agents, production design |
-| 6 | [Python](06-Python-Interview-QA.md) | Core Python, async programming, APIs, testing |
-| 7 | [SQL](07-SQL-Interview-QA.md) | Querying, indexing, transactions, optimization |
-| 8 | [Azure PaaS](08-Azure-PAAS-Interview-QA.md) | Azure services, identity, networking, observability |
-| 9 | [Azure Data Factory](09-Azure-Data-Factory.md) | ETL/ELT, incremental loads, triggers, CI/CD |
-| 10 | [Principal & Architect Scenarios](10-Principal-Architect-Scenario-QA.md) | Production incidents, architecture trade-offs, GenAI/RAG, Azure, SQL, Python |
-| 11 | [Advanced C#/.NET Scenarios](11-Advanced-CSharp-DotNet-Scenarios.md) | ValueTask, thread-pool starvation, async design |
-| 12 | [SOLID Design Scenarios](12-SOLID-Design-Scenario-QA.md) | SRP, LSP, abstraction boundaries, DI |
-| 13 | [Architecture Principal Scenarios](13-Architecture-Principal-Engineer-Scenarios.md) | Monolith evolution, APIs vs events, trade-offs |
-| 14 | [GenAI/RAG Production Scenarios](14-GenAI-RAG-Production-Scenarios.md) | Retrieval debugging, authorization, evaluation, security |
-| 15 | [Python Backend Scenarios](15-Python-Backend-Interview-Scenarios.md) | Async APIs, CPU workloads, retries and resilience |
-| 16 | [SQL Performance Scenarios](16-SQL-Performance-Interview-Scenarios.md) | Execution plans, indexing, idempotent writes |
-| 17 | [Azure PaaS Principal Scenarios](17-Azure-PAAS-Principal-Scenarios.md) | 503 diagnosis, managed identity, reliability |
-| 18 | [Azure Data Factory Advanced Scenarios](18-Azure-Data-Factory-Advanced-Scenarios.md) | Watermarks, late data, recovery, data quality |
-| 19 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
+| 2 | [C# Internal Working — Visual Q&A](01A-CSharp-Internal-Working-Visual-QA.md) | GC, TPL, async/await, generics, collections, lambdas, delegates |
+| 3 | [SOLID Principles](02-SOLID-Principles.md) | Maintainable and testable object-oriented design |
+| 4 | [Top 5 Design Patterns](03-Top-5-Design-Patterns.md) | Reusable object-oriented design solutions |
+| 5 | [Architectural Patterns](04-Architectural-Patterns.md) | Microservices, clean architecture, CQRS, event-driven systems |
+| 6 | [GenAI and RAG](05-GenAI-RAG-Interview-QA.md) | Retrieval, evaluation, security, agents, production design |
+| 7 | [Python](06-Python-Interview-QA.md) | Core Python, async programming, APIs, testing |
+| 8 | [SQL](07-SQL-Interview-QA.md) | Querying, indexing, transactions, optimization |
+| 9 | [Azure PaaS](08-Azure-PAAS-Interview-QA.md) | Azure services, identity, networking, observability |
+| 10 | [Azure Data Factory](09-Azure-Data-Factory.md) | ETL/ELT, incremental loads, triggers, CI/CD |
+| 11 | [Principal & Architect Scenarios](10-Principal-Architect-Scenario-QA.md) | Production incidents, architecture trade-offs, GenAI/RAG, Azure, SQL, Python |
+| 12 | [Advanced C#/.NET Scenarios](11-Advanced-CSharp-DotNet-Scenarios.md) | ValueTask, thread-pool starvation, async design |
+| 13 | [SOLID Design Scenarios](12-SOLID-Design-Scenario-QA.md) | SRP, LSP, abstraction boundaries, DI |
+| 14 | [Architecture Principal Scenarios](13-Architecture-Principal-Engineer-Scenarios.md) | Monolith evolution, APIs vs events, trade-offs |
+| 15 | [GenAI/RAG Production Scenarios](14-GenAI-RAG-Production-Scenarios.md) | Retrieval debugging, authorization, evaluation, security |
+| 16 | [Python Backend Scenarios](15-Python-Backend-Interview-Scenarios.md) | Async APIs, CPU workloads, retries and resilience |
+| 17 | [SQL Performance Scenarios](16-SQL-Performance-Interview-Scenarios.md) | Execution plans, indexing, idempotent writes |
+| 18 | [Azure PaaS Principal Scenarios](17-Azure-PAAS-Principal-Scenarios.md) | 503 diagnosis, managed identity, reliability |
+| 19 | [Azure Data Factory Advanced Scenarios](18-Azure-Data-Factory-Advanced-Scenarios.md) | Watermarks, late data, recovery, data quality |
+| 20 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
 
 ## 🧠 DSA — LeetCode Top Interview 150
 
