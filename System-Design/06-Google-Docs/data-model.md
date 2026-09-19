@@ -1,6 +1,9 @@
-# Google Docs-like Collaboration — Detailed Data Model
+# 📝 Google Docs-like Collaboration — Detailed Data Model
 
-## ER Diagram
+> 🎯 **Design focus:** Store document metadata, permissions, edits, snapshots, and comments while supporting concurrent real-time collaboration.
+
+## 🎨 ER Diagram
+
 ```mermaid
 erDiagram
     USER ||--o{ DOCUMENT : owns
@@ -13,7 +16,28 @@ erDiagram
     COMMENT_THREAD ||--o{ COMMENT : contains
 ```
 
-## DOCUMENT
+## 🔄 Edit Persistence Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Editor
+    participant Collab as 🟢 Collaboration Engine
+    participant Log as 🟡 Operation Log
+    participant Snapshot as 📸 Snapshot Worker
+    participant Blob as 📚 Blob Storage
+
+    Editor->>Collab: Submit operation + base version
+    Collab->>Collab: Validate, order, transform/merge
+    Collab->>Log: Persist operation
+    Log-->>Collab: Durable acknowledgement
+    Collab-->>Editor: ACK + server version
+    Log-)Snapshot: Trigger periodic snapshot
+    Snapshot->>Blob: Store compact document snapshot
+```
+
+## 📄 DOCUMENT
+
 | Field | Type | Key | Description |
 |---|---|---|---|
 | document_id | UUID | PK | Document ID |
@@ -24,7 +48,8 @@ erDiagram
 | created_at | timestamp | | Creation time |
 | updated_at | timestamp | IDX | Last update |
 
-## DOCUMENT_PERMISSION
+## 🔐 DOCUMENT_PERMISSION
+
 | Field | Type | Key | Description |
 |---|---|---|---|
 | document_id | UUID | PK/FK | Document |
@@ -33,7 +58,8 @@ erDiagram
 | expires_at | timestamp | | Optional expiration |
 | updated_at | timestamp | | Permission update |
 
-## DOCUMENT_VERSION
+## 📸 DOCUMENT_VERSION
+
 | Field | Type | Key | Description |
 |---|---|---|---|
 | document_id | UUID | PK/FK | Document |
@@ -42,7 +68,8 @@ erDiagram
 | created_by | UUID | FK | Author |
 | created_at | timestamp | | Snapshot time |
 
-## OPERATION
+## ✍️ OPERATION
+
 | Field | Type | Key | Description |
 |---|---|---|---|
 | operation_id | UUID/ULID | PK | Operation ID |
@@ -54,7 +81,8 @@ erDiagram
 | server_version | bigint | IDX | Applied document version |
 | created_at | timestamp | | Submission time |
 
-## COMMENT_THREAD / COMMENT
+## 💬 COMMENT_THREAD / COMMENT
+
 | Entity | Field | Type | Key |
 |---|---|---|---|
 | COMMENT_THREAD | thread_id | UUID | PK |
@@ -67,10 +95,13 @@ erDiagram
 | COMMENT | body | text | |
 | COMMENT | created_at | timestamp | |
 
-## Storage and Design
-- Store recent operations in a durable log partitioned by `document_id`.
-- Periodically create snapshots in Blob Storage to bound replay time.
-- Use optimistic concurrency with server versions; reject or transform stale operations.
-- OT or CRDT logic belongs in the collaboration service, not in the relational database.
-- Cache permissions carefully and invalidate on every permission change.
-- Use append-only audit events for sharing, permission changes, and document recovery.
+## ⚡ Storage & Design Notes
+
+- 🟡 Store recent operations in a durable log partitioned by `document_id`.
+- 📸 Periodically create snapshots in Blob Storage to bound replay time.
+- 🔄 Use optimistic concurrency with server versions; reject or transform stale operations.
+- 🧠 Keep OT/CRDT logic in the collaboration service, not in the relational database.
+- 🔐 Cache permissions carefully and invalidate on every permission change.
+- 🧾 Use append-only audit events for sharing, permission changes, and document recovery.
+
+> 💡 **Interview tip:** The operation log is the source for replay, while snapshots provide fast recovery. Keep both responsibilities explicit.
