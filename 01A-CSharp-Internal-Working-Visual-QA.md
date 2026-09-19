@@ -1,193 +1,98 @@
-# 🎨 C# Internal Working — Beginner-Friendly Visual Q&A
+# 🎨 C# / .NET Internal Working — Visual Interview Q&A
 
-> Learn the **what**, **why**, and **how it works internally**. Each topic includes simple language, comparisons, code, and colorful Mermaid diagrams.
+> **Theme:** High-contrast diagrams for dark GitHub backgrounds. Yellow boxes use black text for readability.
 
 ---
 
-## 🗑️ Q1. How Does the .NET Garbage Collector Work?
+## 🗑️ Q1. How does the .NET Garbage Collector work?
 
-### 🟢 Simple Explanation
-The Garbage Collector (GC) automatically reclaims memory occupied by objects that the application can no longer reach. You create objects; the runtime decides when collection is needed.
+### ✅ Answer
+The Garbage Collector (GC) automatically manages **managed memory**. It finds objects that are no longer reachable and reclaims their memory.
 
-### 🔵 Internal Working
+### 🔍 Internal flow
 1. Objects are allocated on the managed heap.
-2. GC identifies roots such as local references, static fields, and handles.
-3. Reachable objects are marked as alive.
-4. Unreachable objects become eligible for reclamation.
-5. Selected heap areas may be compacted.
-6. Surviving objects can be promoted from Gen 0 to Gen 1 and Gen 2.
+2. GC identifies roots: local references, static fields, handles, and CPU registers.
+3. Reachable objects are marked.
+4. Unreachable objects are reclaimed.
+5. Selected areas may be compacted.
+6. Surviving objects may be promoted from Gen 0 → Gen 1 → Gen 2.
 
 ```mermaid
 flowchart TD
-    A[🧑‍💻 Create Object] --> B[🧠 Managed Heap]
-    B --> C{📈 GC Trigger?}
+    A[Create object] --> B[Managed heap]
+    B --> C{GC required?}
     C -- No --> B
-    C -- Yes --> D[🔎 Find GC Roots]
-    D --> E[🏷️ Mark Reachable Objects]
-    E --> F[🧹 Reclaim Unreachable Objects]
-    F --> G[📦 Compact Selected Areas]
-    G --> H[🔁 Promote Survivors]
-    H --> I[▶️ Continue Application]
-    style A fill:#dbeafe,stroke:#2563eb
-    style D fill:#f3e8ff,stroke:#7e22ce
-    style F fill:#fee2e2,stroke:#dc2626
-    style I fill:#dcfce7,stroke:#16a34a
+    C -- Yes --> D[Find GC roots]
+    D --> E[Mark reachable objects]
+    E --> F[Reclaim unreachable objects]
+    F --> G[Compact selected regions]
+    G --> H[Promote survivors]
+    H --> I[Resume application]
+    style A fill:#ffeb3b,color:#000,stroke:#000
+    style D fill:#ffd54f,color:#000,stroke:#000
+    style F fill:#ffb74d,color:#000,stroke:#000
+    style I fill:#a5d6a7,color:#000,stroke:#000
 ```
 
-### 📊 Generations
-
-| Generation | Simple meaning |
-|---|---|
-| Gen 0 | New and usually short-lived objects |
-| Gen 1 | Objects that survived a Gen 0 collection |
-| Gen 2 | Long-lived objects |
-| LOH | Large Object Heap for large allocations |
-
-```mermaid
-flowchart LR
-    A[🆕 Object] --> B[🟢 Gen 0]
-    B -->|Survives| C[🔵 Gen 1]
-    C -->|Survives| D[🟣 Gen 2]
-    B -->|Dead| E[🗑️ Reclaimed]
-    C -->|Dead| E
-    D -->|Dead| E
-    style B fill:#dcfce7,stroke:#16a34a
-    style C fill:#dbeafe,stroke:#2563eb
-    style D fill:#f3e8ff,stroke:#7e22ce
-    style E fill:#fee2e2,stroke:#dc2626
-```
-
-### 💻 Code
-```csharp
-public static void CreateTemporaryObjects()
-{
-    for (int i = 0; i < 100_000; i++)
-    {
-        // Temporary allocations can create GC pressure.
-        string message = $"Order-{i}";
-        _ = message.Length;
-    }
-}
-```
-
-### ⚠️ Interview Points
-- A memory leak is possible when unwanted objects remain reachable.
-- `IDisposable` releases resources such as files and sockets; GC manages managed memory.
-- Do not call `GC.Collect()` as a default performance fix.
-- Profile allocation rate, heap size, Gen 2 activity, and pause time before optimizing.
+### 🎤 Interview points
+- Gen 0 usually contains short-lived objects.
+- Gen 2 contains long-lived objects.
+- LOH stores large allocations and is collected with older generations.
+- A memory leak can happen when unwanted objects remain reachable.
+- GC manages managed memory; it does not automatically close files, sockets, or database connections.
 
 ---
 
-## ⚡ Q2. TPL vs `async`/`await`: How Do They Work?
+## ⚡ Q2. TPL vs `async`/`await` — what is the difference?
 
-### 🟢 Simple Explanation
-**TPL** is a task-based library for scheduling and coordinating work. **`async`/`await`** is a C# language feature that makes asynchronous code easier to write.
+### ✅ Answer
+**TPL (Task Parallel Library)** is a .NET library for task scheduling, parallelism, cancellation, and coordination. **`async`/`await`** is a C# language feature that simplifies asynchronous control flow.
 
-### 📊 Comparison
-
-| Feature | TPL | `async`/`await` |
+| Topic | TPL | `async` / `await` |
 |---|---|---|
-| Category | .NET library | C# language feature |
-| Main role | Create, schedule, combine, and cancel tasks | Pause and resume async methods |
-| CPU work | `Task.Run`, parallel APIs | Does not automatically create a thread |
-| I/O work | Represents operation completion with tasks | Awaits I/O without normally blocking a thread |
-| Examples | `Task.WhenAll`, `Parallel.ForEachAsync` | `await client.GetAsync(...)` |
+| Type | .NET library | C# language feature |
+| Main purpose | Create and coordinate tasks | Pause and resume asynchronous methods |
+| CPU work | `Task.Run`, `Parallel` | Does not automatically create a thread |
+| I/O work | Represents operations using `Task` | Awaits completion without blocking during I/O |
+| Examples | `Task.WhenAll`, `Task.Delay` | `await client.GetAsync(...)` |
 
-### 🔵 What Happens at `await`?
-1. The method starts running synchronously.
-2. It reaches an incomplete task.
-3. The method returns an incomplete `Task` to its caller.
-4. The remaining code is stored as a continuation/state machine.
-5. When the operation completes, the continuation resumes.
-6. The task completes with a result or exception.
+### 🔍 What happens at `await`?
+1. The method executes synchronously until an incomplete task is reached.
+2. The method returns control to its caller.
+3. The compiler-generated state machine stores continuation state.
+4. The I/O operation completes.
+5. The continuation resumes and the returned task completes.
 
 ```mermaid
 sequenceDiagram
-    participant C as 🌐 Caller
-    participant M as ⚙️ Async Method
-    participant I as 🔌 I/O Service
-    participant K as 🔁 Continuation
+    participant C as Caller
+    participant M as Async method
+    participant I as I/O service
+    participant K as Continuation
     C->>M: Call method
-    M->>I: Start HTTP/DB operation
+    M->>I: Start operation
     M-->>C: Return incomplete Task
-    Note over C: Caller can do other work
     I-->>K: Operation completed
     K->>M: Resume after await
     M-->>C: Complete Task
 ```
 
-### 🧵 I/O vs CPU Flow
-```mermaid
-flowchart TD
-    A[📥 Work] --> B{Work type?}
-    B -- I/O-bound --> C[🔌 Start asynchronous I/O]
-    C --> D[🕒 Thread is not blocked waiting]
-    D --> E[✅ Completion signal]
-    E --> F[🔁 Continue method]
-    B -- CPU-bound --> G[🧮 Execute CPU work]
-    G --> H[🧵 ThreadPool worker may execute]
-    F --> I[🏁 Task completes]
-    H --> I
-    style C fill:#fef3c7,stroke:#d97706
-    style G fill:#dbeafe,stroke:#2563eb
-    style I fill:#dcfce7,stroke:#16a34a
-```
-
-### 💻 I/O Example
-```csharp
-public async Task<string> GetTextAsync(
-    HttpClient client,
-    CancellationToken cancellationToken)
-{
-    return await client.GetStringAsync(
-        "https://example.com",
-        cancellationToken);
-}
-```
-
-### 💻 CPU Example
-```csharp
-public Task<long> CalculateAsync(int limit)
-{
-    return Task.Run(() =>
-    {
-        long total = 0;
-        for (int i = 0; i < limit; i++)
-            total += i;
-        return total;
-    });
-}
-```
-
-### 🟠 Interview Rule
-Use async I/O for waiting on external systems. Consider parallelism for CPU-bound work only after checking CPU capacity and measuring the result. Avoid `.Result` and `.Wait()` in request paths.
+### 🎤 Interview rule
+Use asynchronous APIs for I/O-bound work. Use parallelism or `Task.Run` for CPU-bound work only after measuring CPU usage and throughput. Avoid `.Result` and `.Wait()` in web request paths.
 
 ---
 
-## 📦 Q3. Generics vs Collections
+## 📦 Q3. Generics vs Collections — how are they related?
 
-### 🟢 Simple Explanation
-A **generic** makes code reusable for different types. A **collection** stores multiple values. They work together: `List<T>` is a generic collection.
+### ✅ Answer
+A **generic** allows reusable, strongly typed code. A **collection** stores multiple values. `List<T>` is an example of a generic collection.
 
-| Topic | Generics | Collections |
-|---|---|---|
-| Purpose | Reusable, strongly typed code | Store and manage groups of values |
-| Example | `Repository<T>` | `List<T>`, `Dictionary<TKey,TValue>` |
-| Main benefit | Compile-time type safety | Access, add, remove, search, iterate |
-| Relationship | Can be used to build collections | Many modern collections are generic |
+| Generics | Collections |
+|---|---|
+| Define reusable type-safe behavior | Store and manage groups of values |
+| Example: `Repository<T>` | Example: `List<T>` |
+| Helps avoid casting and boxing | Provides lookup, insertion, removal, and iteration |
 
-```mermaid
-flowchart TD
-    A[✍️ Generic Type T] --> B[🧩 Provide concrete type]
-    B --> C[🔎 Compile-time type checking]
-    C --> D[✅ Strongly typed code]
-    D --> E[📦 Use with List<T> or Dictionary<TKey,TValue>]
-    style A fill:#dbeafe,stroke:#2563eb
-    style C fill:#f3e8ff,stroke:#7e22ce
-    style E fill:#dcfce7,stroke:#16a34a
-```
-
-### 💻 Generic Method
 ```csharp
 public static T FirstItem<T>(IReadOnlyList<T> items)
 {
@@ -196,153 +101,255 @@ public static T FirstItem<T>(IReadOnlyList<T> items)
 
     return items[0];
 }
-
-int number = FirstItem(new[] { 10, 20 });
-string name = FirstItem(new[] { "Azam", "Sara" });
 ```
 
-### 📊 Collection Selection
-| Collection | Choose it when |
+| Collection | Use case |
 |---|---|
-| `List<T>` | You need an ordered dynamic list |
-| `Dictionary<TKey,TValue>` | You need key-based lookup |
-| `HashSet<T>` | Values must be unique |
-| `Queue<T>` | You process first-in-first-out work |
-| `Stack<T>` | You process last-in-first-out work |
-| `T[]` | Size is fixed or array semantics are useful |
+| `List<T>` | Ordered, dynamically sized list |
+| `Dictionary<TKey,TValue>` | Key-based lookup |
+| `HashSet<T>` | Unique values |
+| `Queue<T>` | FIFO processing |
+| `Stack<T>` | LIFO processing |
+| Array | Fixed-size indexed data |
 
 ---
 
-## ✨ Q4. What Is a Lambda Expression?
+## ✨ Q4. What is a lambda expression?
 
-### 🟢 Simple Explanation
-A lambda is a short function expression. It is often passed to LINQ methods, callbacks, and delegates.
+### ✅ Answer
+A lambda is a compact function expression commonly used with delegates, callbacks, and LINQ.
 
 ```csharp
 Func<int, int> doubleValue = value => value * 2;
-Console.WriteLine(doubleValue(5)); // 10
+var evenNumbers = numbers.Where(number => number % 2 == 0);
 ```
 
-### 📊 Syntax
-| Example | Meaning |
+| Syntax | Meaning |
 |---|---|
-| `x => x * 2` | One parameter and expression body |
+| `x => x * 2` | One parameter, expression body |
 | `(x, y) => x + y` | Two parameters |
 | `() => DateTime.UtcNow` | No parameters |
 | `x => { return x * 2; }` | Statement body |
 
-### 🔵 Lambda Flow
-```mermaid
-flowchart LR
-    A[✍️ Lambda] --> B{Target type?}
-    B -- Delegate --> C[⚙️ Executable behavior]
-    B -- Expression<Func<...>> --> D[🔎 Expression tree]
-    C --> E[✅ Invoke]
-    D --> F[🗄️ Provider may translate]
-    style A fill:#dbeafe,stroke:#2563eb
-    style D fill:#f3e8ff,stroke:#7e22ce
-    style E fill:#dcfce7,stroke:#16a34a
-```
-
-### 💻 Lambda with LINQ
-```csharp
-var evenNumbers = new[] { 1, 2, 3, 4, 5 }
-    .Where(number => number % 2 == 0)
-    .Select(number => number * 10)
-    .ToList();
-```
-
-### 🧠 Closure
-A lambda can capture a variable from the surrounding scope. Captured state may live longer than expected, so be careful with mutable values and long-lived callbacks.
-
-```csharp
-int multiplier = 3;
-Func<int, int> multiply = value => value * multiplier;
-Console.WriteLine(multiply(5)); // 15
-```
+A lambda can capture outer variables. This is called a **closure** and can extend the lifetime of captured state.
 
 ---
 
-## 🎯 Q5. `Func`, `Action`, `Predicate`, and Delegates
+## 🎯 Q5. What are `Func`, `Action`, `Predicate`, and delegates?
 
-### 🟢 Simple Explanation
-A delegate is a type-safe reference to a method. It allows behavior to be passed around like data.
+### ✅ Answer
+A delegate is a type-safe reference to a method. It allows behavior to be passed as a parameter or stored in a variable.
 
-| Type | Return | Common use |
+| Type | Return value | Typical use |
 |---|---|---|
-| `Action` | `void` | Perform an operation |
-| `Func<T>` | Value | Calculate or transform |
-| `Predicate<T>` | `bool` | Check a condition |
-| Custom delegate | Defined by you | Domain-specific signatures |
+| `Action<T>` | `void` | Execute an operation |
+| `Func<T, TResult>` | `TResult` | Transform or calculate |
+| `Predicate<T>` | `bool` | Validate a condition |
+| Custom delegate | Defined by you | Domain-specific contracts |
 
 ```csharp
 Action<string> log = message => Console.WriteLine(message);
 Func<int, int, int> add = (a, b) => a + b;
 Predicate<int> isEven = number => number % 2 == 0;
-
-log("Created");
-int total = add(10, 20);
-bool valid = isEven(4);
 ```
 
-### 🔵 Delegate Invocation Flow
-```mermaid
-sequenceDiagram
-    participant C as 🧑‍💻 Caller
-    participant D as 🎯 Delegate
-    participant M as ⚙️ Method
-    C->>D: Invoke(arguments)
-    D->>M: Forward call
-    M-->>D: Return value or action complete
-    D-->>C: Return result
-```
-
-### 📊 `Func` Shape
-| Type | Meaning |
-|---|---|
-| `Func<TResult>` | No input; returns `TResult` |
-| `Func<T, TResult>` | One input; returns `TResult` |
-| `Func<T1,T2,TResult>` | Two inputs; returns `TResult` |
-
-The final generic parameter of `Func` is the return type.
+The final generic parameter of `Func` is always the return type.
 
 ---
 
-## 🟠 Principal Engineer Scenario: API Is Slow During Traffic Spikes
+## 🌐 Q6. What is the difference between .NET and .NET Core?
 
-Use this sequence instead of guessing:
+### ✅ Answer
+**.NET Core** was Microsoft's cross-platform, open-source implementation introduced as the successor to the .NET Framework. Starting with **.NET 5**, Microsoft unified the platform under the name **.NET**.
+
+| .NET Framework | .NET Core / modern .NET |
+|---|---|
+| Windows-focused | Cross-platform: Windows, Linux, macOS |
+| Mature legacy applications | Modern cloud-native and container workloads |
+| Windows-specific technologies available | High-performance, modular, cross-platform APIs |
+| Versions such as 4.8 | .NET Core 1–3.1, then .NET 5+ |
+
+### 🎤 Interview answer
+For new APIs and cloud-native services, modern .NET is generally preferred. Existing .NET Framework applications may require migration planning because some Windows-only APIs are unavailable cross-platform.
+
+```mermaid
+flowchart LR
+    A[.NET Framework] --> C[Modern .NET ecosystem]
+    B[.NET Core 1.x–3.1] --> C
+    C --> D[.NET 5+]
+    D --> E[Cross-platform apps]
+    style A fill:#ffeb3b,color:#000,stroke:#000
+    style B fill:#ffeb3b,color:#000,stroke:#000
+    style D fill:#ffd54f,color:#000,stroke:#000
+    style E fill:#a5d6a7,color:#000,stroke:#000
+```
+
+---
+
+## 🧩 Q7. What is middleware in ASP.NET Core?
+
+### ✅ Answer
+Middleware is a component in the HTTP request pipeline. It can inspect, modify, or short-circuit a request and response.
 
 ```mermaid
 flowchart TD
-    A[🐢 High p99 Latency] --> B[🔍 Inspect traces and metrics]
-    B --> C{Blocking or starvation?}
-    C -- Yes --> D[🚫 Remove sync waits and bound concurrency]
-    C -- No --> E[🔎 Check DB, HTTP, GC, and connection pools]
-    D --> F[🧪 Load test]
-    E --> F
-    F --> G[📊 Compare p50, p95, p99 and throughput]
-    style A fill:#fee2e2,stroke:#dc2626
-    style D fill:#fef3c7,stroke:#d97706
-    style G fill:#dcfce7,stroke:#16a34a
+    A[HTTP request] --> B[Exception middleware]
+    B --> C[Logging middleware]
+    C --> D[Authentication middleware]
+    D --> E[Authorization middleware]
+    E --> F[Endpoint / controller]
+    F --> G[HTTP response]
+    G --> C
+    style A fill:#ffeb3b,color:#000,stroke:#000
+    style C fill:#ffd54f,color:#000,stroke:#000
+    style F fill:#ffb74d,color:#000,stroke:#000
+    style G fill:#a5d6a7,color:#000,stroke:#000
 ```
 
-### 🎤 Answer Structure
-1. Clarify the symptoms and affected endpoints.
-2. Check traces, CPU, GC, thread pool, database waits, and downstream latency.
-3. Apply a targeted change.
-4. Test under realistic load.
-5. Roll out gradually and monitor.
+### 💻 Example
+```csharp
+app.Use(async (context, next) =>
+{
+    Console.WriteLine("Request started");
+
+    await next();
+
+    Console.WriteLine("Response completed");
+});
+```
+
+### 🎤 Key points
+- Middleware order matters.
+- It can run code before and after `next()`.
+- It can short-circuit by not calling `next()`.
+- Typical examples: exception handling, logging, CORS, authentication, routing, and rate limiting.
 
 ---
 
-## 🔗 Official Documentation
+## 🛡️ Q8. Filters vs Middleware — what is the difference?
+
+### ✅ Answer
+Middleware works at the **HTTP pipeline level**. Filters work mainly within the **MVC/controller execution pipeline** and have access to action-specific context.
+
+| Middleware | Filters |
+|---|---|
+| Runs for requests entering the pipeline | Runs at selected MVC/action stages |
+| Can apply to almost every request | Can be global, controller-level, or action-level |
+| Has `HttpContext` | Has action/controller-specific context |
+| Good for logging, auth, exception handling, headers | Good for validation, action logging, result processing |
+| Executes before endpoint selection in relevant pipeline stages | Executes around MVC action execution |
+
+### 🎤 Selection rule
+Use middleware for cross-cutting concerns that apply broadly to HTTP requests. Use filters when the logic needs MVC action, model state, action arguments, or result context.
+
+```mermaid
+flowchart TD
+    A[Request] --> B[Middleware pipeline]
+    B --> C[MVC endpoint]
+    C --> D[Authorization filter]
+    D --> E[Action filter]
+    E --> F[Controller action]
+    F --> G[Result filter]
+    G --> H[Response]
+    style A fill:#ffeb3b,color:#000,stroke:#000
+    style B fill:#ffd54f,color:#000,stroke:#000
+    style E fill:#ffb74d,color:#000,stroke:#000
+    style H fill:#a5d6a7,color:#000,stroke:#000
+```
+
+---
+
+## ♻️ Q9. `Dispose` vs `Finalize` — how are they different?
+
+### ✅ Answer
+`Dispose` is a deterministic cleanup pattern initiated by application code. `Finalize` is a runtime-triggered cleanup mechanism that runs before an object is reclaimed, when applicable.
+
+| `Dispose` | `Finalize` |
+|---|---|
+| Called explicitly or through `using` | Called by GC finalization process |
+| Deterministic | Non-deterministic |
+| Usually implemented through `IDisposable` | Implemented through a finalizer `~TypeName()` |
+| Suitable for files, sockets, handles | Last-resort cleanup for unmanaged resources |
+| Can be called multiple times if designed safely | Adds GC/finalization overhead |
+
+```csharp
+public sealed class FileResource : IDisposable
+{
+    private bool _disposed;
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        // Release unmanaged or owned resources.
+        GC.SuppressFinalize(this);
+    }
+}
+```
+
+### 🎤 Interview point
+Prefer `SafeHandle` and `IDisposable` for unmanaged resources. Do not rely on finalizers for timely cleanup. A finalizer should be rare and carefully designed.
+
+---
+
+## 🧹 Q10. `IDisposable` vs Garbage Collector — who cleans what?
+
+### ✅ Answer
+The GC reclaims memory for unreachable managed objects. `IDisposable` provides a contract for releasing resources that need explicit cleanup.
+
+| Concern | Garbage Collector | `IDisposable` |
+|---|---|---|
+| Main responsibility | Reclaim managed object memory | Release owned resources promptly |
+| Trigger | Runtime decides | Code calls `Dispose` / `using` |
+| Timing | Non-deterministic | Deterministic when called correctly |
+| Examples | Managed objects, arrays, strings | Files, streams, sockets, DB connections |
+| Replaces the other? | No | No |
+
+```csharp
+using (var stream = File.OpenRead("data.txt"))
+{
+    // Use stream.
+} // Dispose is called automatically.
+```
+
+### ⚠️ Common misconception
+Calling `Dispose()` does not necessarily destroy the object immediately, and GC does not guarantee that an external resource is closed at the exact time you need. Use `using`, `await using`, or explicit disposal according to the resource contract.
+
+---
+
+## 🟠 Q11. How would you troubleshoot high API latency during traffic spikes?
+
+### ✅ Answer structure
+1. Clarify affected endpoints and latency percentiles.
+2. Inspect distributed traces and dependency timings.
+3. Check thread-pool starvation, sync-over-async, GC pauses, database waits, connection pools, and downstream services.
+4. Bound concurrency and remove blocking calls.
+5. Load test with realistic traffic.
+6. Roll out gradually and compare p50, p95, p99, error rate, and throughput.
+
+```mermaid
+flowchart TD
+    A[High p99 latency] --> B[Inspect metrics and traces]
+    B --> C{Blocking or starvation?}
+    C -- Yes --> D[Remove sync waits and bound concurrency]
+    C -- No --> E[Check DB, HTTP, GC, and pools]
+    D --> F[Load test]
+    E --> F
+    F --> G[Canary release and monitor]
+    style A fill:#ffeb3b,color:#000,stroke:#000
+    style D fill:#ffd54f,color:#000,stroke:#000
+    style G fill:#a5d6a7,color:#000,stroke:#000
+```
+
+---
+
+## 🔗 Official documentation
 
 - [Garbage collection](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/)
-- [Garbage collection fundamentals](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals)
 - [Task Parallel Library](https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/task-parallel-library-tpl)
-- [Async programming](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/)
+- [Asynchronous programming](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/)
+- [ASP.NET Core middleware](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/)
+- [ASP.NET Core filters](https://learn.microsoft.com/en-us/aspnet/core/mvc/controllers/filters)
+- [Implementing `Dispose`](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose)
 - [Generics](https://learn.microsoft.com/en-us/dotnet/standard/generics/)
-- [Collections](https://learn.microsoft.com/en-us/dotnet/standard/collections/)
 - [Delegates](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/)
-- [Lambda expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions)
-- [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/)
