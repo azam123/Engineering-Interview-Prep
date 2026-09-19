@@ -15,7 +15,7 @@ A simple, interview-focused collection of system design problems using practical
 
 ## 🎯 Recruiter-Shared Preparation Guide
 
-- [Google Recruiter System Design Interview Guide](07-Google-Recruiter-System-Design-Guide.md) — recruiter-shared preparation themes, interview approach, quantitative design, APIs, trade-offs, reliability, and scalability.
+- [Google Recruiter System Design Interview Guide](00-Google-Recruiter-System-Design-Interview-Guide.md) — recruiter-shared preparation themes, interview approach, quantitative design, APIs, trade-offs, reliability, and scalability.
 
 ## Standard Coverage in Every Design
 
