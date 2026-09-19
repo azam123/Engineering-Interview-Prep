@@ -1,42 +1,52 @@
-# 🎨 SOLID Principles — Beginner-Friendly Visual Interview Q&A
+# 🎨 SOLID Principles — Easy English + Visual Interview Guide
 
-> **Goal:** Understand SOLID using simple language, practical C# examples, and visual flow diagrams. SOLID is guidance—not a rule that requires creating interfaces for every class.
+> **Learning pattern used in every section:** Actual Definition → Simple English → Example → Flow Diagram → Scenario Questions → Answers → Interview Shortcut.
 
-## 🟨 Q1. What is SOLID and why do we use it?
+## 1. What is SOLID?
 
-**Answer:** SOLID is a group of five design principles that help us write code that is easier to change, test, and maintain.
+### Actual Definition
+SOLID is a group of five object-oriented design principles that help software remain understandable, maintainable, testable, and easier to change.
 
-Think of a large application like a house. If electricity, plumbing, and furniture are tightly mixed together, every change becomes risky. SOLID helps us keep responsibilities and dependencies organized.
+### Simple English
+SOLID is not about creating many classes or interfaces. It is about keeping code organised so that one business change does not break unrelated parts of the application.
+
+| Letter | Principle | Easy meaning |
+|---|---|---|
+| S | Single Responsibility | One class should focus on one type of work |
+| O | Open/Closed | Add new behaviour without repeatedly changing stable code |
+| L | Liskov Substitution | A replacement implementation must honour the expected contract |
+| I | Interface Segregation | Do not force clients to depend on methods they do not use |
+| D | Dependency Inversion | Business code should depend on abstractions, not infrastructure details |
 
 ```mermaid
 flowchart TD
-    A[🧑‍💻 Business Requirement Changes] --> B{Is code tightly coupled?}
-    B -- Yes --> C[🟥 Many files need changes]
-    C --> D[🟥 More regression risk]
-    B -- No --> E[🟨 Change one focused component]
-    E --> F[🟩 Easier testing and deployment]
+    A[Business Change] --> B{Is code well separated?}
+    B -- No --> C[Many files change]
+    C --> D[Higher regression risk]
+    B -- Yes --> E[Change focused component]
+    E --> F[Easier testing and maintenance]
     style A fill:#ffe66d,color:#000,stroke:#000
     style C fill:#ff9999,color:#000,stroke:#000
     style D fill:#ff9999,color:#000,stroke:#000
-    style E fill:#ffe66d,color:#000,stroke:#000
+    style E fill:#d6eaff,color:#000,stroke:#000
     style F fill:#90ee90,color:#000,stroke:#000
 ```
 
-| Letter | Principle | Simple meaning |
-|---|---|---|
-| S | Single Responsibility | One class should focus on one main job |
-| O | Open/Closed | Add new behavior without repeatedly changing stable code |
-| L | Liskov Substitution | A child type should behave correctly wherever the parent is expected |
-| I | Interface Segregation | Do not force a class to implement methods it does not need |
-| D | Dependency Inversion | Business logic should depend on abstractions, not infrastructure details |
-
 ---
 
-## 🟨 Q2. What is the Single Responsibility Principle (SRP)?
+## 2. S — Single Responsibility Principle (SRP)
 
-**Answer:** A class should have one primary responsibility and one main reason to change.
+### Actual Definition
+A class should have one reason to change.
 
-### ❌ Problem: One class doing everything
+### Simple English
+A class should concentrate on one main responsibility. If database rules, email rules, and invoice formatting change for different reasons, they should not all be tightly mixed in one class.
+
+**Important:** SRP does not mean one class can contain only one method. It means its responsibilities should belong to the same area of change.
+
+### Example
+
+❌ **Problem:**
 
 ```csharp
 public class OrderService
@@ -44,70 +54,82 @@ public class OrderService
     public void ValidateOrder() { }
     public void SaveToDatabase() { }
     public void SendEmail() { }
-    public void CreatePdfInvoice() { }
+    public void CreateInvoicePdf() { }
 }
 ```
 
-If database logic changes, email logic changes, and invoice formatting changes all affect the same class, the class becomes difficult to maintain.
-
-### ✅ Better design
+✅ **Better:**
 
 ```csharp
-public interface IOrderValidator { bool IsValid(Order order); }
-public interface IOrderRepository { Task SaveAsync(Order order, CancellationToken ct); }
-public interface INotificationService { Task SendAsync(string message, CancellationToken ct); }
-
-public sealed class OrderApplicationService(
-    IOrderValidator validator,
-    IOrderRepository repository,
-    INotificationService notification)
+public sealed class OrderValidator
 {
-    public async Task CreateAsync(Order order, CancellationToken ct)
-    {
-        if (!validator.IsValid(order))
-            throw new ArgumentException("Invalid order");
+    public bool IsValid(Order order) => order.Total > 0;
+}
 
-        await repository.SaveAsync(order, ct);
-        await notification.SendAsync("Order created", ct);
-    }
+public sealed class OrderRepository
+{
+    public Task SaveAsync(Order order) => Task.CompletedTask;
+}
+
+public sealed class OrderNotificationService
+{
+    public Task SendAsync(string message) => Task.CompletedTask;
 }
 ```
+
+### Flow Diagram
 
 ```mermaid
 flowchart TD
-    A[🟨 Create Order] --> B[🟨 Validate Order]
-    B --> C[🟨 Save Order]
-    C --> D[🟨 Send Notification]
-    B --> E[🟥 Invalid Order]
+    A[Create Order] --> B[Validate Order]
+    B --> C[Save Order]
+    C --> D[Send Notification]
+    B --> E[Invalid Order]
     style A fill:#ffe66d,color:#000,stroke:#000
-    style B fill:#ffe66d,color:#000,stroke:#000
-    style C fill:#ffe66d,color:#000,stroke:#000
+    style B fill:#d6eaff,color:#000,stroke:#000
+    style C fill:#d6eaff,color:#000,stroke:#000
     style D fill:#90ee90,color:#000,stroke:#000
     style E fill:#ff9999,color:#000,stroke:#000
 ```
 
-**Interview shortcut:** SRP does not mean every method must be in a separate class. It means responsibilities that change for different reasons should not be unnecessarily bundled together.
+### Scenario-Based Questions and Answers
+
+**Q1. A class validates orders, writes to SQL, sends emails, and generates PDFs. What is wrong?**
+
+**Answer:** It has multiple reasons to change. Validation, persistence, notification, and document formatting are separate responsibilities. Split them into focused components and let an application service coordinate them.
+
+**Q2. Does SRP require a separate class for every method?**
+
+**Answer:** No. Splitting every method creates unnecessary complexity. Group methods that belong to the same responsibility and change for the same reason.
+
+**Interview Shortcut:** “SRP means one class should have one main responsibility and one primary reason to change—not necessarily one method.”
 
 ---
 
-## 🟨 Q3. What is the Open/Closed Principle (OCP)?
+## 3. O — Open/Closed Principle (OCP)
 
-**Answer:** Existing stable code should not need constant modification whenever a new variation is added. Extend behavior through a suitable abstraction.
+### Actual Definition
+Software entities should be open for extension but closed for modification.
 
-### ❌ Hard-to-maintain approach
+### Simple English
+When a new variation is introduced, we should preferably add a new implementation instead of repeatedly editing and risking stable business logic.
+
+### Example
+
+❌ **Problem:**
 
 ```csharp
-public decimal CalculateDiscount(string customerType, decimal amount)
+public decimal CalculateDiscount(string type, decimal amount)
 {
-    if (customerType == "Premium") return amount * 0.90m;
-    if (customerType == "Employee") return amount * 0.80m;
+    if (type == "Premium") return amount * 0.90m;
+    if (type == "Employee") return amount * 0.80m;
     return amount;
 }
 ```
 
-Every new customer type requires editing the same method.
+Every new discount type requires changing the method.
 
-### ✅ Strategy-based approach
+✅ **Better:**
 
 ```csharp
 public interface IDiscountPolicy
@@ -126,13 +148,15 @@ public sealed class EmployeeDiscount : IDiscountPolicy
 }
 ```
 
+### Flow Diagram
+
 ```mermaid
 flowchart TD
-    A[🟨 Calculate Price] --> B[🟨 IDiscountPolicy]
-    B --> C[🟨 Premium Strategy]
-    B --> D[🟨 Employee Strategy]
-    B --> E[🟨 Future Strategy]
-    C --> F[🟩 Final Price]
+    A[Pricing Service] --> B[IDiscountPolicy]
+    B --> C[Premium Discount]
+    B --> D[Employee Discount]
+    B --> E[New Discount Added Later]
+    C --> F[Final Price]
     D --> F
     E --> F
     style A fill:#ffe66d,color:#000,stroke:#000
@@ -143,15 +167,31 @@ flowchart TD
     style F fill:#90ee90,color:#000,stroke:#000
 ```
 
-**Important:** OCP does not mean you must predict every future feature. Introduce an abstraction when change is likely or already happening repeatedly.
+### Scenario-Based Questions and Answers
+
+**Q1. Should we create an interface for every possible future feature?**
+
+**Answer:** No. Use an abstraction when variation is real, likely, or already causing repeated changes. Do not predict imaginary requirements.
+
+**Q2. A new payment method requires editing a large switch statement. What can you do?**
+
+**Answer:** Consider a strategy or handler abstraction, such as `IPaymentMethod`, and register separate implementations for card, UPI, and wallet payments.
+
+**Interview Shortcut:** “OCP reduces the risk of modifying stable code when adding a new variation.”
 
 ---
 
-## 🟨 Q4. What is the Liskov Substitution Principle (LSP)?
+## 4. L — Liskov Substitution Principle (LSP)
 
-**Answer:** If code expects a base type, any valid derived type should work without surprising failures or changed rules.
+### Actual Definition
+Objects of a subtype should be replaceable for objects of the base type without changing the correctness of the program.
 
-### ❌ Example of a broken abstraction
+### Simple English
+If a method expects a parent type, every child implementation must follow the promises of that parent. A child should not unexpectedly throw errors, weaken rules, or change the meaning of operations.
+
+### Example
+
+❌ **Broken inheritance:**
 
 ```csharp
 public class Bird
@@ -166,12 +206,13 @@ public class Penguin : Bird
 }
 ```
 
-A method expecting `Bird` may call `Fly()` and fail for `Penguin`.
+The caller expects every `Bird` to fly, but `Penguin` cannot satisfy that promise.
 
-### ✅ Better design
+✅ **Better design:**
 
 ```csharp
 public interface IBird { }
+
 public interface IFlyingBird
 {
     void Fly();
@@ -187,13 +228,15 @@ public sealed class Penguin : IBird
 }
 ```
 
+### Flow Diagram
+
 ```mermaid
 flowchart TD
-    A[🟨 Caller expects a bird] --> B{Does it require flying?}
-    B -- Yes --> C[🟨 Use IFlyingBird]
-    C --> D[🟩 Eagle works safely]
-    B -- No --> E[🟨 Use IBird]
-    E --> F[🟩 Penguin also works]
+    A[Caller needs a bird] --> B{Does caller need flying?}
+    B -- Yes --> C[Use IFlyingBird]
+    C --> D[Eagle satisfies contract]
+    B -- No --> E[Use IBird]
+    E --> F[Penguin is valid]
     style A fill:#ffe66d,color:#000,stroke:#000
     style C fill:#d6eaff,color:#000,stroke:#000
     style D fill:#90ee90,color:#000,stroke:#000
@@ -201,15 +244,31 @@ flowchart TD
     style F fill:#90ee90,color:#000,stroke:#000
 ```
 
-**Interview smell:** `NotSupportedException`, unexpected validation restrictions, or a subclass that violates the promises of the parent abstraction.
+### Scenario-Based Questions and Answers
+
+**Q1. A subclass throws `NotSupportedException` for a method defined by the parent. Is that a warning sign?**
+
+**Answer:** Yes. It may mean the parent contract is too broad or inheritance is being used incorrectly. Revisit the abstraction or use composition/interfaces.
+
+**Q2. Can a child class add extra validation?**
+
+**Answer:** It must not break expectations established by the parent contract. Stronger preconditions can make a valid parent operation fail when the subtype is substituted.
+
+**Interview Shortcut:** “LSP means implementations must honour the promises made by the abstraction.”
 
 ---
 
-## 🟨 Q5. What is the Interface Segregation Principle (ISP)?
+## 5. I — Interface Segregation Principle (ISP)
 
-**Answer:** Keep interfaces focused so consumers depend only on methods they actually need.
+### Actual Definition
+Clients should not be forced to depend on interfaces they do not use.
 
-### ❌ Fat interface
+### Simple English
+Avoid one huge interface containing unrelated methods. Create smaller interfaces based on what each client actually needs.
+
+### Example
+
+❌ **Fat interface:**
 
 ```csharp
 public interface IWorker
@@ -219,9 +278,9 @@ public interface IWorker
 }
 ```
 
-A robot worker may not need `Eat()`.
+A robot may work but does not need `Eat()`.
 
-### ✅ Smaller interfaces
+✅ **Focused interfaces:**
 
 ```csharp
 public interface IWorkable
@@ -235,29 +294,48 @@ public interface IEatable
 }
 ```
 
+### Flow Diagram
+
 ```mermaid
 flowchart TD
-    A[🟨 Client] --> B[🟨 Small focused interface]
-    B --> C[🟩 Only required methods]
-    D[🟨 Another client] --> E[🟨 Different focused interface]
-    E --> F[🟩 No unused methods]
+    A[Human Worker] --> B[IWorkable]
+    A --> C[IEatable]
+    D[Robot Worker] --> B
+    B --> E[Only required behaviour]
+    C --> F[Human-specific behaviour]
     style A fill:#ffe66d,color:#000,stroke:#000
-    style B fill:#ffe66d,color:#000,stroke:#000
-    style C fill:#90ee90,color:#000,stroke:#000
     style D fill:#ffe66d,color:#000,stroke:#000
-    style E fill:#ffe66d,color:#000,stroke:#000
+    style B fill:#d6eaff,color:#000,stroke:#000
+    style C fill:#d6eaff,color:#000,stroke:#000
+    style E fill:#90ee90,color:#000,stroke:#000
     style F fill:#90ee90,color:#000,stroke:#000
 ```
 
-**Simple test:** If an implementation contains empty methods or throws `NotImplementedException` because it does not need part of an interface, the interface may be too large.
+### Scenario-Based Questions and Answers
+
+**Q1. An implementation contains empty methods or `NotImplementedException`. What does it suggest?**
+
+**Answer:** The interface may contain operations that the implementation does not need. Split the interface into smaller client-focused contracts.
+
+**Q2. Is having many small interfaces always better?**
+
+**Answer:** No. Interfaces should represent meaningful contracts. Excessive splitting can make the code harder to understand.
+
+**Interview Shortcut:** “ISP prevents clients from depending on methods they do not need.”
 
 ---
 
-## 🟨 Q6. What is the Dependency Inversion Principle (DIP)?
+## 6. D — Dependency Inversion Principle (DIP)
 
-**Answer:** High-level business logic should not directly depend on low-level infrastructure. Both should depend on an abstraction.
+### Actual Definition
+High-level modules should not depend on low-level modules. Both should depend on abstractions. Details should depend on abstractions.
 
-### ❌ Direct dependency
+### Simple English
+Business logic should not directly create or control infrastructure such as SQL clients, SMTP libraries, cloud SDKs, or vendor APIs. It should communicate through a contract.
+
+### Example
+
+❌ **Tightly coupled:**
 
 ```csharp
 public sealed class OrderService
@@ -266,9 +344,7 @@ public sealed class OrderService
 }
 ```
 
-This makes testing and replacing email infrastructure harder.
-
-### ✅ Depend on an abstraction
+✅ **Abstraction-based:**
 
 ```csharp
 public interface INotifier
@@ -283,18 +359,16 @@ public sealed class OrderService(INotifier notifier)
 }
 ```
 
-```csharp
-builder.Services.AddScoped<INotifier, EmailNotifier>();
-```
+### Flow Diagram
 
 ```mermaid
 flowchart TD
-    A[🟨 Order Service] --> B[🟨 INotifier abstraction]
-    B --> C[🟨 Email Adapter]
-    B --> D[🟨 SMS Adapter]
-    B --> E[🟨 Test Fake]
-    C --> F[🟩 External Email Provider]
-    D --> G[🟩 SMS Provider]
+    A[Order Service] --> B[INotifier abstraction]
+    B --> C[Email Adapter]
+    B --> D[SMS Adapter]
+    B --> E[Test Fake]
+    C --> F[Email Provider]
+    D --> G[SMS Provider]
     style A fill:#ffe66d,color:#000,stroke:#000
     style B fill:#ffe66d,color:#000,stroke:#000
     style C fill:#d6eaff,color:#000,stroke:#000
@@ -304,22 +378,32 @@ flowchart TD
     style G fill:#90ee90,color:#000,stroke:#000
 ```
 
-**Remember:** DIP does not mean every class needs an interface. Use abstractions where implementation changes, external systems, testing, or ownership boundaries justify them.
+### Scenario-Based Questions and Answers
+
+**Q1. Why should an application service not directly call an Azure SDK?**
+
+**Answer:** Direct SDK usage couples business logic to infrastructure, makes unit testing harder, and increases the impact of vendor or implementation changes. Put the SDK behind an adapter or abstraction when that boundary adds value.
+
+**Q2. Does DIP mean every class needs an interface?**
+
+**Answer:** No. Use abstractions at meaningful boundaries such as external services, databases, queues, clocks, payment gateways, and implementations that need substitution.
+
+**Interview Shortcut:** “DIP is about the direction of dependency; high-level business rules should not be controlled by low-level implementation details.”
 
 ---
 
-## 🟨 Q7. What is the difference between Dependency Inversion and Dependency Injection?
+## 7. DIP vs Dependency Injection (DI)
 
-| Concept | Simple meaning |
+| Term | Meaning |
 |---|---|
-| Dependency Inversion | Design principle: high-level code depends on abstractions |
-| Dependency Injection | Technique: provide dependencies from outside the class |
+| DIP | A design principle: depend on abstractions |
+| DI | A technique: provide dependencies from outside a class |
 
 ```mermaid
 flowchart LR
-    A[🟨 Composition Root / DI Container] --> B[🟨 OrderService]
-    A --> C[🟨 EmailNotifier]
-    B --> D[🟨 INotifier]
+    A[DI Container] --> B[OrderService]
+    A --> C[EmailNotifier]
+    B --> D[INotifier]
     C --> D
     style A fill:#ffe66d,color:#000,stroke:#000
     style B fill:#d6eaff,color:#000,stroke:#000
@@ -327,22 +411,27 @@ flowchart LR
     style D fill:#90ee90,color:#000,stroke:#000
 ```
 
-**Easy memory trick:** DIP is the design idea; DI is one practical way to implement it.
+**Simple memory trick:** DIP is the architectural idea; DI is one way to implement that idea.
 
 ---
 
-## 🟨 Q8. How do SOLID principles work together in a real API?
+## 8. Integrated Real-World API Scenario
 
-Imagine an order API:
+### Question
+Design an order API that validates an order, saves it, sends a notification, and supports changing notification providers.
+
+### Answer
+Use a controller for HTTP concerns, an application service for orchestration, focused validators, repository abstractions, and notification abstractions.
 
 ```mermaid
 flowchart TD
-    A[🟨 Controller] --> B[🟨 Application Service]
-    B --> C[🟨 Validator]
-    B --> D[🟨 Repository Interface]
-    B --> E[🟨 Notification Interface]
-    D --> F[🟨 SQL Adapter]
-    E --> G[🟨 Email Adapter]
+    A[HTTP Controller] --> B[Order Application Service]
+    B --> C[Order Validator]
+    B --> D[IOrderRepository]
+    B --> E[INotifier]
+    D --> F[SQL Repository]
+    E --> G[Email Adapter]
+    E --> H[SMS Adapter]
     style A fill:#ffe66d,color:#000,stroke:#000
     style B fill:#ffe66d,color:#000,stroke:#000
     style C fill:#d6eaff,color:#000,stroke:#000
@@ -350,144 +439,64 @@ flowchart TD
     style E fill:#d6eaff,color:#000,stroke:#000
     style F fill:#90ee90,color:#000,stroke:#000
     style G fill:#90ee90,color:#000,stroke:#000
+    style H fill:#90ee90,color:#000,stroke:#000
 ```
 
-- **SRP:** Controller, service, validator, and repository have focused responsibilities.
-- **OCP:** Add a new notification or pricing strategy without changing the whole business flow.
-- **LSP:** Implementations honor the contracts of their abstractions.
-- **ISP:** Interfaces expose only related operations.
-- **DIP:** Business logic depends on interfaces rather than SQL or email SDK classes.
+**How the principles appear:**
+
+- **SRP:** Each component has a focused responsibility.
+- **OCP:** New notification strategies can be added behind `INotifier`.
+- **LSP:** Each implementation must honour its interface contract.
+- **ISP:** Contracts contain only related operations.
+- **DIP:** The application service depends on abstractions rather than SQL or email SDKs.
 
 ---
 
-## 🟨 Q9. Is SOLID always required?
+## 9. Principal Engineer Scenario Questions
 
-**Answer:** No. SOLID is guidance, not a checklist to apply blindly.
+### Q1. A team created 40 interfaces for 40 classes. Is that good SOLID?
 
-Avoid unnecessary abstractions when:
+**Answer:** Not automatically. Review whether each interface represents a real boundary, multiple implementations, testing need, independent change, or business contract. Interfaces created only by habit can add indirection without reducing coupling.
 
-- The code is small and stable.
-- There is no real variation.
-- An interface only forwards one method without value.
-- Additional layers make debugging harder.
-- The design is being created only to satisfy a rule.
+### Q2. A payment vendor changes its SDK frequently. What design would you use?
 
-Use SOLID when it helps manage change, testing, ownership, or complexity.
+**Answer:** Create an `IPaymentGateway` contract and a vendor-specific adapter. Keep vendor request/response models inside the adapter and translate them into application models.
 
----
+### Q3. A large switch statement handles card, UPI, wallet, and bank transfer.
 
-## 🟨 Q10. How can SOLID be misused?
+**Answer:** First check whether the variations are stable and genuinely different. If they change independently, use a strategy/handler design. If the switch is small and unlikely to change, keeping it simple may be better.
 
-Common problems include:
+### Q4. A developer says, “We must apply all SOLID principles everywhere.” How do you respond?
 
-- Creating interfaces for every class automatically.
-- Adding factories and wrappers without a real reason.
-- Using inheritance where composition is clearer.
-- Splitting one simple operation into many pass-through layers.
-- Designing for imaginary future requirements.
-- Treating SOLID as more important than readability and delivery.
-
-```mermaid
-flowchart TD
-    A[🟨 New Feature] --> B{Does abstraction solve a real problem?}
-    B -- Yes --> C[🟩 Introduce focused abstraction]
-    B -- No --> D[🟨 Keep simple implementation]
-    C --> E[🟩 Test and measure]
-    D --> E
-    style A fill:#ffe66d,color:#000,stroke:#000
-    style C fill:#90ee90,color:#000,stroke:#000
-    style D fill:#ffe66d,color:#000,stroke:#000
-    style E fill:#90ee90,color:#000,stroke:#000
-```
+**Answer:** SOLID is guidance, not a compliance checklist. The design should balance maintainability, readability, delivery speed, performance, testing, and operational complexity.
 
 ---
 
-## 🟨 Q11. Principal Engineer scenario: A team created 40 interfaces for 40 classes. Is that good SOLID?
+## 10. Quick Revision Table
 
-**Answer:** Not automatically. Review why each interface exists.
+| Principle | Main question to ask |
+|---|---|
+| SRP | Does this class have unrelated reasons to change? |
+| OCP | Can a new variation be added without risky edits to stable code? |
+| LSP | Can this implementation safely replace the expected abstraction? |
+| ISP | Is the client forced to depend on unused methods? |
+| DIP | Does business logic directly depend on infrastructure details? |
 
-Ask:
+## 11. Interview Answer Formula
 
-1. Does the implementation change independently?
-2. Is it an external boundary such as payment, database, queue, or time?
-3. Is the interface useful for testing or multiple implementations?
-4. Does the abstraction make the business language clearer?
-5. Does it reduce coupling or only add another forwarding layer?
+Use this sequence in interviews:
 
-The goal is **controlled change**, not the maximum number of interfaces.
+1. State the actual definition.
+2. Explain it in simple English.
+3. Give a bad example.
+4. Give a better C# design.
+5. Explain the trade-off.
+6. Describe a real production scenario.
 
----
+**Final reminder:** Good architecture is not the architecture with the most interfaces. Good architecture makes change safer while keeping the code understandable.
 
-## 🟨 Q12. How do you handle a payment provider that changes its SDK frequently?
+### References
 
-**Answer:** Place an adapter boundary between the application and the vendor SDK. Keep vendor-specific types outside the domain and application layers.
-
-```csharp
-public interface IPaymentGateway
-{
-    Task<PaymentResult> AuthorizeAsync(
-        Money amount,
-        CancellationToken ct);
-}
-
-public sealed class VendorPaymentAdapter(VendorClient client)
-    : IPaymentGateway
-{
-    public async Task<PaymentResult> AuthorizeAsync(
-        Money amount,
-        CancellationToken ct)
-    {
-        var response = await client.AuthorizeAsync(
-            amount.Value,
-            amount.Currency,
-            ct);
-
-        return new PaymentResult(
-            response.Success,
-            response.Reference);
-    }
-}
-```
-
-```mermaid
-flowchart LR
-    A[🟨 Business Logic] --> B[🟨 IPaymentGateway]
-    B --> C[🟨 Vendor Adapter]
-    C --> D[🟨 Vendor SDK]
-    D --> E[🟩 Payment Provider]
-    style A fill:#ffe66d,color:#000,stroke:#000
-    style B fill:#ffe66d,color:#000,stroke:#000
-    style C fill:#d6eaff,color:#000,stroke:#000
-    style D fill:#d6eaff,color:#000,stroke:#000
-    style E fill:#90ee90,color:#000,stroke:#000
-```
-
-This approach limits the impact of vendor SDK changes and makes the adapter easier to contract-test.
-
----
-
-## 🟨 Quick Revision Table
-
-| Principle | Ask yourself | Common code smell |
-|---|---|---|
-| SRP | Does this class have unrelated reasons to change? | God class |
-| OCP | Can a new variation be added cleanly? | Large conditional chain |
-| LSP | Can every implementation honor the same contract? | Unexpected exception or behavior |
-| ISP | Are clients forced to depend on unused methods? | Fat interface |
-| DIP | Is business logic tied to infrastructure? | `new` infrastructure inside service |
-
-## 🎤 Interview Answer Formula
-
-When asked about any SOLID principle:
-
-1. Explain it in one simple sentence.
-2. Show a small problematic example.
-3. Explain the real-world problem.
-4. Show a focused improvement.
-5. Mention when **not** to overuse the principle.
-
-## 🔗 References
-
-- [Microsoft: SOLID design patterns](https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/solid-design-patterns)
-- [Microsoft: Dangers of violating SOLID principles in C#](https://learn.microsoft.com/en-us/archive/msdn-magazine/2014/may/csharp-best-practices-dangers-of-violating-solid-principles-in-csharp)
-- [Microsoft .NET architecture guidance](https://learn.microsoft.com/en-us/dotnet/architecture/)
+- Robert C. Martin’s SOLID principle definitions.
+- University of Toronto — SOLID design principles lecture material.
+- FHNW Software Engineering Fundamentals — SOLID principles and design trade-offs.
