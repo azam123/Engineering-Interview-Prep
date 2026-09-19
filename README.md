@@ -29,7 +29,15 @@ A practical, continuously improving interview-preparation knowledge base for **b
 | 8 | [Azure PaaS](08-Azure-PAAS-Interview-QA.md) | Azure services, identity, networking, observability |
 | 9 | [Azure Data Factory](09-Azure-Data-Factory.md) | ETL/ELT, incremental loads, triggers, CI/CD |
 | 10 | [Principal & Architect Scenarios](10-Principal-Architect-Scenario-QA.md) | Production incidents, architecture trade-offs, GenAI/RAG, Azure, SQL, Python |
-| 11 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
+| 11 | [Advanced C#/.NET Scenarios](11-Advanced-CSharp-DotNet-Scenarios.md) | ValueTask, thread-pool starvation, async design |
+| 12 | [SOLID Design Scenarios](12-SOLID-Design-Scenario-QA.md) | SRP, LSP, abstraction boundaries, DI |
+| 13 | [Architecture Principal Scenarios](13-Architecture-Principal-Engineer-Scenarios.md) | Monolith evolution, APIs vs events, trade-offs |
+| 14 | [GenAI/RAG Production Scenarios](14-GenAI-RAG-Production-Scenarios.md) | Retrieval debugging, authorization, evaluation, security |
+| 15 | [Python Backend Scenarios](15-Python-Backend-Interview-Scenarios.md) | Async APIs, CPU workloads, retries and resilience |
+| 16 | [SQL Performance Scenarios](16-SQL-Performance-Interview-Scenarios.md) | Execution plans, indexing, idempotent writes |
+| 17 | [Azure PaaS Principal Scenarios](17-Azure-PAAS-Principal-Scenarios.md) | 503 diagnosis, managed identity, reliability |
+| 18 | [Azure Data Factory Advanced Scenarios](18-Azure-Data-Factory-Advanced-Scenarios.md) | Watermarks, late data, recovery, data quality |
+| 19 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
 
 ## 🧠 DSA — LeetCode Top Interview 150
 
@@ -44,8 +52,6 @@ The repository documents each problem using a consistent interview-first format:
 - Optimized approach, C# solution and complexity
 - Dry run and edge cases
 - Further optimization discussion where applicable
-
-**Current progress:** **22 / 150** documented in the index; `23-rotate-array` is also present as the next unique problem and will be synchronized into the index in the next DSA maintenance pass.
 
 ## 🔄 Learning Flow
 
