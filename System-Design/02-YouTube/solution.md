@@ -1,8 +1,10 @@
-# 🎬 YouTube System Design
+# 🎬 **YouTube System Design**
 
-> **Scope:** Video upload, processing, playback, metadata, search, comments and view events. Estimates are illustrative and should be confirmed with the interviewer.
+> 🎯 **Mission:** Upload once, process safely, and stream smoothly to millions of viewers.
 
-## 1. Requirement Gathering
+> 🎨 **Visual legend:** 🔵 Client/edge · 🟣 Compute · 🟢 Data · 🔴 Async pipeline · 🟡 Delivery
+
+## 🌈 1. 🧭 Requirement Gathering — *Define the video journey*
 
 Clarify:
 - Target regions and availability SLA
@@ -12,7 +14,7 @@ Clarify:
 - Expected video quality: 360p, 720p, 1080p, 4K
 - Recommendation and monetization scope
 
-## 2. Functional Requirements
+## 🔵 2. ⚙️ Functional Requirements
 
 - Upload videos using resumable/multipart uploads.
 - Store title, description, tags and privacy settings.
@@ -23,7 +25,7 @@ Clarify:
 - Search videos and show approximate view counts.
 - Process view events asynchronously.
 
-## 3. Non-Functional Requirements
+## 🟢 3. 🛡️ Non-Functional Requirements
 
 - High availability and durable media storage
 - Low playback startup time and low rebuffering
@@ -32,7 +34,7 @@ Clarify:
 - Secure private-video access
 - Fault isolation between API, storage, encoding and playback
 
-## 4. Capacity Estimation: DAU and QPS
+## 🟠 4. 📊 Capacity Estimation: DAU and QPS
 
 | Metric | Assumption |
 |---|---:|
@@ -50,7 +52,7 @@ Clarify:
 
 **Important:** Playback traffic is mostly delivered by the CDN. Application QPS and origin QPS are therefore much lower than client request volume when cache hit ratio is high.
 
-## 5. Data and Storage Estimation
+## 🟡 5. 💾 Data and Storage Estimation
 
 ### Source video storage
 
@@ -75,7 +77,7 @@ Use lifecycle policies to move old content to cooler tiers. Deduplicate where po
 - Search index: separate distributed search cluster, rebuilt from the source of truth.
 - Analytics: object storage/data lake in columnar formats such as Parquet.
 
-## 6. Database and Storage Selection
+## 🔷 6. 🗄️ Database and Storage Selection
 
 | Data | Recommended technology | Reason |
 |---|---|---|
@@ -89,62 +91,97 @@ Use lifecycle policies to move old content to cooler tiers. Deduplicate where po
 | Analytics and history | Azure Data Lake Storage + Spark/Synapse | Cheap retention and batch/stream analytics |
 | Delivery | CDN such as Azure Front Door/CDN | Edge caching and reduced origin bandwidth |
 
-## 7. High-Level System Design
+## 🌈 7. 🏗️ High-Level System Design — *A video moves through a colorful pipeline*
 
 ```mermaid
 flowchart LR
-    U([👤 User]) --> FE[🌐 Web / Mobile Client]
-    FE --> CDN[🟦 CDN / Azure Front Door]
-    FE --> API[🟪 API Gateway]
-
-    API --> AUTH[🔐 Auth Service]
-    API --> META[(🟩 Metadata DB)]
-    API --> CACHE[(🟨 Redis Cache)]
-    API --> SEARCH[(🟧 Search Index)]
-    API --> EVENTS[🟥 View Event Stream]
-
-    FE -->|Signed multipart upload| RAW[(🟦 Azure Blob: Raw Videos)]
-    RAW --> BUS[🟥 Service Bus / Queue]
-    BUS --> TRANS[🟪 Transcoding Workers]
-    TRANS --> ENCODED[(🟦 Blob: HLS/DASH Renditions)]
-    TRANS --> THUMB[(🟦 Blob: Thumbnails)]
-    ENCODED --> CDN
+    U([👤 Viewer/Creator]) --> FE[🌐 Web / Mobile]
+    FE --> CDN[🟡 CDN / Front Door]
+    FE --> API[🟣 API Gateway]
+    API --> AUTH[🔐 Auth]
+    API --> META[(🟢 Metadata DB)]
+    API --> CACHE[(🟢 Redis)]
+    API --> SEARCH[(🟢 Search)]
+    FE -->|Signed upload| RAW[(🔵 Raw Blob)]
+    RAW --> BUS[[🔴 Queue]]
+    BUS --> TRANS[🟣 Transcoding Workers]
+    TRANS --> READY[(🔵 HLS/DASH Blob)]
+    TRANS --> THUMB[(🔵 Thumbnail Blob)]
+    READY --> CDN
     THUMB --> CDN
+    API --> EVENTS[[🔴 View Events]]
+    EVENTS --> AGG[🟣 Stream Aggregator]
+    AGG --> COUNTER[(🟢 Counter Store)]
+    AGG --> LAKE[(🟤 Data Lake)]
 
-    EVENTS --> AGG[🟪 Stream Aggregator]
-    AGG --> COUNTER[(🟩 View Counter Store)]
-    AGG --> LAKE[(🟫 Data Lake / Analytics)]
-
-    classDef client fill:#E3F2FD,stroke:#1976D2,color:#0D47A1;
-    classDef compute fill:#F3E5F5,stroke:#7B1FA2,color:#4A148C;
-    classDef data fill:#E8F5E9,stroke:#388E3C,color:#1B5E20;
-    classDef queue fill:#FFEBEE,stroke:#D32F2F,color:#B71C1C;
-    classDef edge fill:#FFF8E1,stroke:#F9A825,color:#6D4C00;
+    classDef client fill:#E3F2FD,stroke:#1976D2,stroke-width:2px;
+    classDef compute fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px;
+    classDef data fill:#E8F5E9,stroke:#388E3C,stroke-width:2px;
+    classDef queue fill:#FFEBEE,stroke:#D32F2F,stroke-width:2px;
+    classDef edge fill:#FFF8E1,stroke:#F9A825,stroke-width:2px;
     class U,FE client;
     class API,AUTH,TRANS,AGG compute;
-    class META,CACHE,SEARCH,RAW,ENCODED,THUMB,COUNTER,LAKE data;
+    class META,CACHE,SEARCH,RAW,READY,THUMB,COUNTER,LAKE data;
     class BUS,EVENTS queue;
     class CDN edge;
 ```
 
-### Playback flow
+### 🎞️ Playback sequence — *fast path for the viewer*
 
-1. Client requests video metadata and manifest.
-2. API checks Redis and metadata store.
-3. Client receives a signed manifest URL.
-4. Video segments are requested from the CDN.
-5. CDN fetches from encoded Blob Storage only on cache miss.
-6. Playback and engagement events are sent asynchronously.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Viewer
+    participant API as 🟣 Playback API
+    participant Cache as 🟢 Redis
+    participant Meta as 🟢 Metadata DB
+    participant CDN as 🟡 CDN
+    participant Blob as 🔵 Blob Storage
+    participant Stream as 🔴 Event Stream
 
-### Upload flow
+    Viewer->>API: Request video + manifest
+    API->>Cache: Read metadata
+    alt Cache hit
+        Cache-->>API: Metadata + manifest reference
+    else Cache miss
+        API->>Meta: Read metadata
+        Meta-->>API: Metadata
+        API->>Cache: Populate cache
+    end
+    API-->>Viewer: Signed manifest URL
+    Viewer->>CDN: Request video segment
+    alt CDN hit
+        CDN-->>Viewer: Cached segment
+    else CDN miss
+        CDN->>Blob: Fetch segment
+        Blob-->>CDN: Segment bytes
+        CDN-->>Viewer: Segment bytes
+    end
+    Viewer->>Stream: Send playback event asynchronously
+```
 
-1. API creates an upload session and returns a signed URL.
-2. Client uploads chunks directly to Blob Storage.
-3. Upload completion emits a queue message.
-4. Workers validate, scan, transcode and generate thumbnails.
-5. Metadata changes from `PROCESSING` to `READY` only after validation.
+### 🛠️ Upload sequence — *heavy work stays off the request path*
 
-## 8. Data Model
+```mermaid
+flowchart TD
+    A[📤 Create upload session] --> B[⬆️ Multipart upload to Blob]
+    B --> C{Upload complete?}
+    C -->|No| B
+    C -->|Yes| D[[📨 Publish processing job]]
+    D --> E[🛡️ Validate and scan]
+    E --> F[🎚️ Transcode resolutions/codecs]
+    F --> G[🖼️ Generate thumbnails/manifests]
+    G --> H[(💾 Store derived assets)]
+    H --> I[✅ Mark video READY]
+    classDef action fill:#E3F2FD,stroke:#1976D2,stroke-width:2px;
+    classDef async fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px;
+    classDef decision fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px;
+    class A,B,E,F,G,H,I action;
+    class D async;
+    class C decision;
+```
+
+## 🟣 8. 🗂️ Data Model
 
 ```text
 Video(video_id, owner_id, title, description, visibility, status, created_at)
@@ -157,7 +194,7 @@ ViewEvent(event_id, video_id, viewer_id, session_id, timestamp)
 
 Partition high-volume data by `video_id`, time bucket or hashed event key. Avoid updating one hot counter for every view.
 
-## 9. API Endpoints
+## 🔵 9. 🔌 API Endpoints
 
 ```http
 POST /v1/videos/upload-sessions
@@ -171,7 +208,7 @@ GET  /v1/search?q=...
 POST /v1/channels/{channelId}/subscribe
 ```
 
-## 10. Performance and Caching
+## 🟢 10. 🚀 Performance and Caching
 
 - Cache popular metadata and manifests in Redis.
 - Cache immutable video segments at CDN edges with long TTLs.
@@ -180,7 +217,7 @@ POST /v1/channels/{channelId}/subscribe
 - Aggregate views in batches instead of synchronously updating counters.
 - Apply backpressure when transcoding queues grow.
 
-## 11. Scaling: Vertical vs Horizontal
+## 🟠 11. 📈 Scaling: Vertical vs Horizontal
 
 - **Vertical scaling:** temporarily improves a single encoding worker or database node but has a hardware ceiling.
 - **Horizontal scaling:** add API replicas, transcoding workers, queue consumers and database partitions.
@@ -188,7 +225,7 @@ POST /v1/channels/{channelId}/subscribe
 - Partition event ingestion by video ID or hashed key.
 - Keep media storage and delivery independent from metadata APIs.
 
-## 12. Security, Authentication and Authorization
+## 🔐 12. Security, Authentication and Authorization
 
 - OAuth/OIDC for user authentication.
 - Signed, short-lived upload and playback URLs.
@@ -197,7 +234,7 @@ POST /v1/channels/{channelId}/subscribe
 - Enforce owner/admin permissions for private videos and moderation.
 - Rate-limit uploads, comments and view-event APIs.
 
-## 13. Monitoring and Observability
+## 🔭 13. Monitoring and Observability
 
 Track:
 - Upload success rate and failed chunk count
@@ -210,10 +247,12 @@ Track:
 
 Use distributed tracing with correlation IDs across API, queue, workers and storage.
 
-## 14. Interview Follow-ups
+## 🎤 14. Interview Follow-ups
 
 - **Viral video:** CDN caching, origin shielding, prewarming and rate limiting.
 - **Duplicate view events:** idempotency key plus stream-side deduplication.
 - **Failed transcoding:** retry with exponential backoff and dead-letter queue.
 - **Private video:** signed URLs with short expiry and authorization checks before issuing them.
 - **Storage cost:** lifecycle tiers, compression, retention rules and deletion of abandoned uploads.
+
+> ⭐ **Remember:** The API coordinates the experience; Blob Storage stores the heavy media; the CDN serves the world; queues absorb slow processing.
