@@ -2,13 +2,17 @@
 
 > 🎯 **Interview goal:** Design a reliable shopping platform where browsing is fast, checkout is safe, inventory is accurate, and every service can scale independently.
 
+> 🎨 **Visual legend:** 🔵 Client/API · 🟢 Services · 🟠 Data stores · 🟣 Async events · 🔴 Critical consistency
+
 ---
 
 ## 🟣 1. 🧭 Requirement Gathering — *Start with the customer journey*
 
 Ask: How many users? Which countries? Do we need marketplace sellers? Are payments and delivery in scope? Is inventory strongly consistent?
 
-💡 **Think like a shopper:** Discover → Select → Add to cart → Checkout → Pay → Track delivery.
+💡 **Fun mental model:** Think of the platform as a digital shopping mall:
+
+`🔎 Discover → 🛍️ Select → 🛒 Cart → 📦 Reserve → 💳 Pay → 🚚 Deliver`
 
 ## 🔵 2. ⚙️ Functional Requirements
 
@@ -35,6 +39,8 @@ Assume 10 million daily active users, 20 product reads per user/day and 1 millio
 - Orders: 1 million/day ≈ 12 writes/second average; peak may be 100 RPS.
 - Use estimates to justify caching and separate order processing.
 
+📌 **Interview tip:** State the assumption first, show the formula, then explain which component needs to scale.
+
 ## 🟡 5. 💾 Data Estimation
 
 Assume 100 million products at 2 KB of structured data: about 200 GB before indexes and replicas. Images belong in object storage, not the relational database. Orders, payments and inventory require durable storage and backups.
@@ -53,26 +59,51 @@ flowchart LR
     GW --> S[🔎 Search]
     GW --> Cart[🛒 Cart]
     GW --> O[📋 Order]
-    O --> I[📊 Inventory]
-    O --> P[💳 Payment]
-    O --> Q[[📨 Event Queue]]
+    O --> I[🔴 Inventory]
+    O --> P[🔴 Payment]
+    O --> Q[[🟣 Event Queue]]
     Q --> N[🔔 Notification]
-    C --> DB[(🗄️ Product DB)]
-    Cart --> R[(⚡ Cart Store)]
-    O --> OD[(🗃️ Order DB)]
-    C --> Cache[(🚀 Redis Cache)]
+    C --> DB[(🟠 Product DB)]
+    Cart --> R[(🟠 Cart Store)]
+    O --> OD[(🟠 Order DB)]
+    C --> Cache[(⚡ Redis Cache)]
 
     classDef client fill:#E1F5FE,stroke:#0288D1,color:#01579B,stroke-width:2px;
     classDef service fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20,stroke-width:2px;
+    classDef critical fill:#FFEBEE,stroke:#C62828,color:#B71C1C,stroke-width:3px;
     classDef data fill:#FFF3E0,stroke:#EF6C00,color:#E65100,stroke-width:2px;
     classDef async fill:#F3E5F5,stroke:#8E24AA,color:#4A148C,stroke-width:2px;
     class U client;
-    class GW,C,S,Cart,O,I,P,N service;
+    class GW,C,S,Cart,O,N service;
+    class I,P critical;
     class DB,R,OD,Cache data;
     class Q async;
 ```
 
-### 🎬 Checkout flow in simple steps
+### 🎬 Checkout flow — *watch the order travel through the system*
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant API as 🚪 API Gateway
+    participant Order as 📋 Order Service
+    participant Stock as 🔴 Inventory
+    participant Pay as 🔴 Payment
+    participant DB as 🗄️ Order DB
+    participant Bus as 🟣 Event Bus
+
+    Customer->>API: Submit checkout + idempotency key
+    API->>Order: Validate cart and price
+    Order->>Stock: Reserve inventory
+    Stock-->>Order: Reservation confirmed
+    Order->>Pay: Authorize payment
+    Pay-->>Order: Payment authorized
+    Order->>DB: Save order and state
+    Order->>Bus: Publish OrderConfirmed
+    Bus-->>Customer: Notify fulfillment/shipping
+    Note over Order,Pay: On failure, compensate or reconcile
+```
 
 1. 🛒 Customer submits the cart.
 2. 🔍 Order service validates price, user and cart contents.
@@ -82,9 +113,9 @@ flowchart LR
 6. 📨 An event triggers notifications, fulfillment and analytics.
 7. 🔁 If a step fails, the workflow performs compensation or reconciliation.
 
-Use separate services for catalog, search, cart, order, inventory, payment and notification. The order service uses a workflow or saga: validate cart → reserve stock → authorize payment → create order → confirm or compensate.
+**Why this design works:** Each service has one clear responsibility. Synchronous calls protect correctness; asynchronous events prevent slow side effects from blocking checkout.
 
-## 🟣 8. 🗂️ Data Model
+## 🟣 8. 🗂️ Data Model — *Keep business truth structured*
 
 - `Product(product_id, seller_id, title, description, price, status)`
 - `Inventory(product_id, warehouse_id, available, reserved, version)`
@@ -95,7 +126,7 @@ Use separate services for catalog, search, cart, order, inventory, payment and n
 
 Use optimistic concurrency or atomic database operations for stock. Store price snapshots in order items.
 
-## 🔵 9. 🔌 API Endpoints
+## 🔵 9. 🔌 API Endpoints — *Small contracts, clear responsibilities*
 
 - `GET /products?query=&page=`
 - `GET /products/{id}`
@@ -106,13 +137,30 @@ Use optimistic concurrency or atomic database operations for stock. Store price 
 - `POST /payments/{orderId}/authorize`
 - `POST /orders/{id}/cancel`
 
-## 🟢 10. 🚀 Performance and Caching
+## 🟢 10. 🚀 Performance and Caching — *Make repeated reads cheap*
 
 Cache product details, categories and search suggestions using cache-aside Redis. Use CDN for images. Do not cache payment state blindly. Use indexes for product filters and search engine technology for full-text search. Use asynchronous queues for emails, analytics and recommendations.
+
+⚡ **Rule of thumb:** Cache what is read often, but never allow a stale cache to decide whether money can be captured or stock can be sold.
 
 ## 🟠 11. 📈 Scaling: Vertical vs Horizontal
 
 Vertical scaling is simple but has hardware limits. Use horizontal scaling for stateless API services behind a load balancer. Add read replicas for catalog reads, partition orders by order ID or customer region, and shard high-volume tables when one database becomes a bottleneck.
+
+```mermaid
+flowchart TD
+    Traffic[📈 More traffic] --> Decision{Where is pressure?}
+    Decision -->|API CPU| API[↔️ Add API replicas]
+    Decision -->|Read load| Cache[⚡ Expand cache/read replicas]
+    Decision -->|Write hotspot| Shard[🧩 Partition or shard]
+    Decision -->|Slow side effects| Queue[🟣 Add queue + workers]
+    classDef input fill:#E1F5FE,stroke:#0288D1,stroke-width:2px;
+    classDef choice fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px;
+    classDef action fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px;
+    class Traffic input;
+    class Decision choice;
+    class API,Cache,Shard,Queue action;
+```
 
 ## 🟡 12. 🔐 Security, Authentication and Authorization
 
