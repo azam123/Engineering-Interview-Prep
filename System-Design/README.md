@@ -13,6 +13,10 @@ A simple, interview-focused collection of system design problems using practical
 | 5 | [URL Shortener](05-URL-Shortener/solution.md) | Base62, caching, redirects, analytics |
 | 6 | [Google Docs](06-Google-Docs/solution.md) | Collaboration, document storage, conflict handling |
 
+## 🎯 Recruiter-Shared Preparation Guide
+
+- [Google Recruiter System Design Interview Guide](07-Google-Recruiter-System-Design-Guide.md) — recruiter-shared preparation themes, interview approach, quantitative design, APIs, trade-offs, reliability, and scalability.
+
 ## Standard Coverage in Every Design
 
 Each solution should explain:
