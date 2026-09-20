@@ -363,6 +363,69 @@ public sealed class RagService
 
 ---
 
+# 🆕 Principal Engineer Deep-Dive Questions
+
+## 🟡 Q21. Why can hybrid retrieval outperform vector-only retrieval?
+
+🟢 **Answer:** Vector search is strong for semantic similarity, while keyword search is strong for exact terms such as policy IDs, product codes, names, and error messages. A hybrid query can run both and combine their rankings. Azure AI Search documents hybrid retrieval using keyword + vector search with Reciprocal Rank Fusion (RRF). citeturn0search0turn0search6
+
+```mermaid
+flowchart LR
+    Q[Question] --> K[Keyword / BM25]
+    Q --> V[Vector Similarity]
+    K --> R[RRF Fusion]
+    V --> R
+    R --> S[Top Evidence]
+    S --> L[LLM]
+    L --> A[Answer + Citations]
+    style Q fill:#fef3c7,stroke:#d97706,color:#111
+    style R fill:#ddd6fe,stroke:#7c3aed,color:#111
+    style A fill:#dcfce7,stroke:#16a34a,color:#111
+```
+
+## 🟡 Q22. How would you detect a RAG regression after changing the embedding model?
+
+🟢 **Answer:** Freeze a golden evaluation dataset containing queries, expected evidence, acceptable answers, and security cases. Compare retrieval Recall@K and ranking metrics, then compare groundedness, correctness, citation accuracy, latency, and cost. Promote the new model only when quality and operational thresholds are met.
+
+## 🟡 Q23. What is the difference between retrieval quality and generation quality?
+
+🟢 **Answer:** Retrieval quality asks **“Did we find the right evidence?”** Generation quality asks **“Did the model answer correctly using that evidence?”** A bad answer can originate from either layer, so production debugging must trace both independently.
+
+```mermaid
+flowchart TD
+    Q[Query] --> R[Retrieval Quality]
+    R --> E[Evidence]
+    E --> G[Generation Quality]
+    G --> A[Final Answer]
+    R -->|Wrong / missing evidence| X[Fix indexing, chunking, filters, ranking]
+    G -->|Unsupported answer| Y[Fix prompt, grounding, model, validation]
+    style R fill:#dbeafe,stroke:#2563eb,color:#111
+    style G fill:#f3e8ff,stroke:#9333ea,color:#111
+    style A fill:#dcfce7,stroke:#16a34a,color:#111
+```
+
+## 🟡 Q24. How do you design an evaluation strategy for enterprise RAG?
+
+🟢 **Answer:** Use offline golden-set evaluation for repeatability, online telemetry for production behavior, human review for difficult cases, and adversarial/security tests for prompt injection and data leakage. Version prompts, models, embeddings, corpus snapshots, and evaluation datasets so regressions are attributable.
+
+🟣 **Interview Tip:** “It works in a demo” is not an evaluation strategy.
+
+## 🟡 Q25. What should a model gateway do?
+
+🟢 **Answer:** Centralize model routing, authentication, quotas, timeouts, retries, telemetry, cost attribution, provider fallback, policy checks, and model/version configuration. Keep application code independent from a single model provider where business value justifies portability.
+
+---
+
+# 🔗 Official Documentation
+
+- [Azure AI Search — Vector search overview](https://learn.microsoft.com/en-us/azure/search/vector-search-overview)
+- [Azure AI Search — Hybrid search](https://learn.microsoft.com/en-us/azure/search/hybrid-search-overview)
+- [Azure AI Search — Create a hybrid query](https://learn.microsoft.com/en-us/azure/search/hybrid-search-how-to-query)
+- [Azure OpenAI / Microsoft Foundry documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/)
+- [Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/)
+
+---
+
 # 🏁 Interview Answer Formula
 
 <span style="color:#2563eb"><b>Define → Explain Simply → Give a Real Example → Draw the Flow → Discuss Trade-offs → Cover Security → Explain Evaluation and Monitoring</b></span>
