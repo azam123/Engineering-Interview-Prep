@@ -53,7 +53,9 @@ The notes use a consistent colorful and easy-to-follow format:
 | 17 | [SQL Performance Scenarios](16-SQL-Performance-Interview-Scenarios.md) | Execution plans, indexing, idempotent writes |
 | 18 | [Azure PaaS Principal Scenarios](17-Azure-PAAS-Principal-Scenarios.md) | 503 diagnosis, managed identity, reliability |
 | 19 | [Azure Data Factory Advanced Scenarios](18-Azure-Data-Factory-Advanced-Scenarios.md) | Watermarks, late data, recovery, data quality |
-| 20 | [DSA — LeetCode Top Interview 150](DSA-LeetCode-150/README.md) | Patterns, complexity, interview questions, optimized C# solutions |
+| 20 | [Advanced C# + SOLID + Patterns](19-Advanced-CSharp-SOLID-Patterns-QA.md) | Composition, strategy/factory, idempotency, synchronization, modular architecture |
+| 21 | [Architecture + GenAI/RAG + Python](20-Architecture-GenAI-Python-Principal-QA.md) | Events, CAP, hybrid RAG, tenant isolation, Python async/resilience |
+| 22 | [SQL + Azure PaaS + ADF](21-SQL-Azure-PaaS-ADF-Architect-QA.md) | SQL tuning, PaaS incidents, managed identity, DR, schema drift, pipeline quality |
 
 ## 🧠 DSA — LeetCode Top Interview 150
 
