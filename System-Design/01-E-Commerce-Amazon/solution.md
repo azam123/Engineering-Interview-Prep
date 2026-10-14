@@ -687,3 +687,179 @@ A strong answer follows a logical sequence:
 #SystemDesign #SystemDesignInterview #DistributedSystems #Scalability #HighAvailability #Caching #Sharding #ConsistentHashing #CAPTheorem #DatabaseDesign #PerformanceEngineering #CloudArchitecture #BackendEngineering #SoftwareArchitecture #InterviewPreparation
 
 > ⭐ **Takeaway:** Design for correctness first on checkout, inventory and payments; optimize browsing for speed; then scale the measured bottlenecks. A good system design is a set of explicit trade-offs, not just a large diagram.
+
+
+---
+
+## 19. 🗄️ Data storage choices — choose by access pattern
+
+There is no single database that is best for every part of an e-commerce platform. Choose a store based on the questions the application asks of the data.
+
+| Data / workload | Suitable starting choice | Why | Watch out for |
+|---|---|---|---|
+| Orders and payment state | Relational database (e.g., PostgreSQL/MySQL) | Transactions, constraints and reliable state changes | Index growth, lock contention and connection limits |
+| Product catalog | Relational or document database | Flexible product attributes and clear ownership | Category-specific attributes can complicate schemas |
+| Full-text search and filters | Search engine/index | Text relevance, facets and typo-tolerant search | Index is a derived view; it can lag behind the catalog |
+| Cart | Redis or durable key-value/document store | Fast reads/writes by customer or cart ID | Expiry, persistence and cross-device behavior |
+| Inventory | Transactional relational/key-value store with conditional writes | Atomic reservation and concurrency control | Hot SKUs and contention require careful design |
+| Product images | Object storage + CDN | Cheap durable blob storage and global delivery | Image resizing, cache invalidation and access controls |
+| Events and asynchronous jobs | Durable message broker/event stream | Decouples producers from consumers | Duplicate delivery, retries, ordering and backlog |
+| Analytics | Warehouse/lakehouse | Large scans and historical reporting | Keep analytical workloads away from checkout databases |
+
+**Practical rule:** use a relational database first for orders and inventory unless measurements or business requirements justify a different design. Polyglot persistence adds operational overhead; every extra database needs backups, monitoring, access controls and a recovery plan.
+
+### Example: prevent overselling with an atomic stock reservation
+
+A naive flow—read stock, then subtract stock in a second request—has a race condition. Two checkout requests may both read “1 item left.” Instead, perform the check and update as one atomic database operation, or use a transaction/conditional write with equivalent guarantees.
+
+~~~sql
+UPDATE inventory
+SET available_quantity = available_quantity - :quantity,
+    reserved_quantity = reserved_quantity + :quantity,
+    version = version + 1
+WHERE product_id = :product_id
+  AND warehouse_id = :warehouse_id
+  AND available_quantity >= :quantity;
+~~~
+
+If the update affects one row, the reservation succeeded. If it affects zero rows, stock is insufficient or the requested inventory record does not exist. In production, also create a reservation ID with an expiry time and make the operation idempotent so a retry cannot reserve twice. Release expired reservations safely and reconcile reservation state after failures.
+
+---
+
+## 20. 🔌 More API contracts: inventory, payment and order status
+
+### Reserve inventory
+
+~~~http
+POST /v1/inventory/reservations
+Authorization: Bearer <service-access-token>
+Idempotency-Key: checkout-attempt-ord_123
+Content-Type: application/json
+~~~
+
+~~~json
+{
+  "orderId": "ord_123",
+  "items": [
+    { "productId": "prd_123", "warehouseId": "wh_01", "quantity": 2 }
+  ],
+  "expiresInSeconds": 600
+}
+~~~
+
+Example success response:
+
+~~~json
+{
+  "reservationId": "res_456",
+  "status": "RESERVED",
+  "expiresAt": "2026-10-14T10:10:00Z"
+}
+~~~
+
+Return a documented conflict response when there is not enough stock. Do not expose internal warehouse or database details unnecessarily.
+
+### Payment status
+
+~~~http
+GET /v1/payments/pay_123
+Authorization: Bearer <access-token>
+~~~
+
+~~~json
+{
+  "paymentId": "pay_123",
+  "orderId": "ord_123",
+  "status": "AUTHORIZED",
+  "currency": "USD",
+  "amount": "159.98"
+}
+~~~
+
+Use signed webhooks from the payment provider, verify signatures and timestamps, deduplicate webhook event IDs, and reconcile with the provider when a timeout leaves the result unknown. A timeout does **not** prove that a payment failed.
+
+### Order state machine
+
+~~~mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> CONFIRMED: stock reserved + payment authorized
+    PENDING --> FAILED: validation or payment failure
+    PENDING --> CANCELLED: checkout expired
+    CONFIRMED --> FULFILLING
+    FULFILLING --> SHIPPED
+    SHIPPED --> DELIVERED
+    CONFIRMED --> CANCELLED: cancellation accepted
+    DELIVERED --> RETURN_REQUESTED
+    RETURN_REQUESTED --> REFUNDED: return approved and refund settled
+    FAILED --> [*]
+    CANCELLED --> [*]
+    DELIVERED --> [*]
+    REFUNDED --> [*]
+~~~
+
+Every transition should validate the current state and be safe to retry. Keep an auditable history for important transitions. Cancellation, stock release and refunds are workflows—not just a status-field update.
+
+---
+
+## 21. 🧭 Consistency by feature — make the trade-off explicit
+
+| Feature | Suggested consistency | Reason |
+|---|---|---|
+| Product description and category | Eventual consistency is usually acceptable | A short indexing/cache delay is tolerable |
+| Search results | Eventual consistency | Search is a derived index and may lag |
+| Cart | Read-your-writes where practical | Customers expect their own edits to appear |
+| Available inventory at checkout | Atomic, strongly coordinated reservation | Avoid selling the same unit twice |
+| Payment status | Durable, idempotent state transitions plus reconciliation | External payment outcomes can be delayed or ambiguous |
+| Order state | Transactional updates with explicit allowed transitions | Prevent contradictory lifecycle states |
+| Analytics and recommendation events | Eventual consistency | Delayed aggregation does not block checkout |
+
+Do not describe the entire platform as “strongly consistent” or “eventually consistent.” State which operation needs which guarantee, and explain how the application behaves when the guarantee cannot be provided.
+
+---
+
+## 22. 🚨 Example alerts and operational targets
+
+The following are starting examples, not universal thresholds. Tune them to the service's SLO, normal traffic and customer impact.
+
+| Alert | Example trigger | First response |
+|---|---|---|
+| API latency | p95 exceeds the SLO for 5–10 minutes | Check traces, dependency latency and recent deployments |
+| API errors | 5xx rate rises above baseline | Check service health, saturation and dependency failures |
+| Inventory conflicts | Sudden rise in reservation failures | Check stock levels, hot SKUs and sale traffic |
+| Payment uncertainty | Provider timeouts or reconciliation backlog rises | Pause unsafe retries and reconcile provider state |
+| Queue backlog | Oldest message age exceeds processing objective | Check consumer health, throughput and poison messages |
+| Replica lag | Lag exceeds the application's read freshness requirement | Route critical reads safely and inspect replication health |
+| Storage capacity | Forecast indicates low remaining headroom | Expand safely, reduce retention where permitted, or partition |
+| Cache failure | Hit ratio collapses or connection errors spike | Protect the database from a cache-miss storm |
+
+Use runbooks that specify an owner, diagnostic steps, rollback options and customer communication. An alert that nobody can act on is noise.
+
+---
+
+## 23. 🎨 One-page mental model
+
+~~~mermaid
+flowchart LR
+    U["🔵 Customer"] --> B["🟢 Browse"] --> C["🟠 Cache / Search"] 
+    U --> CO["🔴 Checkout"] --> I["🔴 Atomic stock reservation"] --> P["🔴 Idempotent payment"] --> O["🟠 Durable order state"]
+    O --> E[["🟣 Outbox + event bus"]] --> F["🟢 Fulfillment / email / analytics"]
+    MON["🔭 Metrics + logs + traces"] -. observes .-> B
+    MON -. observes .-> CO
+    MON -. observes .-> I
+    MON -. observes .-> P
+    classDef user fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:2px;
+    classDef browse fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:2px;
+    classDef store fill:#ffedd5,stroke:#ea580c,color:#7c2d12,stroke-width:2px;
+    classDef critical fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px;
+    classDef async fill:#f3e8ff,stroke:#9333ea,color:#581c87,stroke-width:2px;
+    class U user;
+    class B,F browse;
+    class C,O store;
+    class CO,I,P critical;
+    class E async;
+~~~
+
+The core design principle is simple: **make browsing fast, make checkout correct, make background work durable, and make failures observable.** Add complexity only when the requirements or measured bottlenecks justify it.
+
+#Amazon #ECommerce #SystemDesign #SystemDesignInterview #DistributedSystems #DatabaseDesign #Caching #Replication #Sharding #ConsistentHashing #CAPTheorem #HighAvailability #Scalability #PerformanceOptimization #API #Security #Observability #BackendEngineering #SoftwareArchitecture #InterviewPrep
