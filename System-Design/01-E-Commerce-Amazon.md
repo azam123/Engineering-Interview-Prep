@@ -1,352 +1,284 @@
-# 🛒 Amazon-Like E-Commerce System Design — End-to-End Guide
+# 🛒 E-Commerce System Design — Beginner Interview Guide
 
-![System Design](https://img.shields.io/badge/System%20Design-End--to--End-6f42c1?style=for-the-badge)
-![Level](https://img.shields.io/badge/Level-Beginner%20Friendly-2ea44f?style=for-the-badge)
-![Architecture](https://img.shields.io/badge/Architecture-Distributed%20Systems-0969da?style=for-the-badge)
-![Topics](https://img.shields.io/badge/Topics-Scalability%20%7C%20Reliability%20%7C%20Security-orange?style=for-the-badge)
+![Interview Prep](https://img.shields.io/badge/Goal-System%20Design%20Interview-6f42c1?style=for-the-badge)
+![Level](https://img.shields.io/badge/Level-Beginner-2ea44f?style=for-the-badge)
+![Format](https://img.shields.io/badge/Format-Step--by--Step-0969da?style=for-the-badge)
+![Focus](https://img.shields.io/badge/Focus-Interview%20Prep-orange?style=for-the-badge)
 
-> 🎯 **Goal:** Design an online shopping platform where browsing is fast, checkout is reliable, inventory is not oversold, payments are safe, and the system can grow from thousands to millions of users.
+> 🎯 **Purpose:** Prepare for the interview question: “Design an online shopping website like Amazon.”
 >
-> 🧠 **Beginner analogy:** Think of a digital shopping mall. The catalog is the shop directory, the cart is your basket, inventory is the stockroom, payment is the cashier, and the event queue is the back-office message board.
+> This guide is for beginners preparing for system design interviews—not a production implementation manual. Start simple, use plain language, draw the main components, and explain why you chose them.
 
-## 🗺️ Learning roadmap
-1. Requirements: what must the product do?
-2. Capacity: how much traffic and data should it handle?
-3. Architecture: which services and databases are needed?
-4. Data model and API contracts: how do components exchange information?
-5. Reliability: cache, replication, sharding, consistency, and CAP.
-6. Operations: performance, scaling, security, and monitoring.
+## 🧭 Interview answer roadmap
 
-## 🎨 Diagram legend
-- 🔵 **Blue:** user, edge, and API entry points
-- 🟢 **Green:** application services
-- 🟠 **Orange:** databases and caches
-- 🟣 **Purple:** queues and asynchronous work
-- 🔴 **Red:** payment, inventory, and correctness-sensitive operations
+1. Clarify the requirements.
+2. Estimate traffic, storage and bandwidth.
+3. Draw the high-level architecture.
+4. Explain the data model and API examples.
+5. Discuss caching, replication, sharding and consistent hashing.
+6. Explain performance, scaling, availability, consistency and CAP.
+7. Finish with security, monitoring and trade-offs.
 
----
+## 1. 🛍️ Requirements
 
-## 1. 🧭 Requirements gathering
+Imagine a website where customers find products, add them to a cart and place orders.
 
-Clarify the scope before drawing boxes. Ask whether the platform supports multiple countries, third-party sellers, multiple warehouses, promotions, returns, reviews, recommendations, and delivery tracking. This example covers the core shopping journey.
+### Functional requirements (FR): what it does
 
-### Functional requirements (FR) — what the system does
+| Requirement | Example |
+|---|---|
+| Browse and search | Find a phone or headphones |
+| View details | See description, image and price |
+| Manage cart | Add or remove an item |
+| Checkout | Confirm items and delivery details |
+| Make payment | Pay through a payment provider |
+| Track order | See whether an order is confirmed or shipped |
 
-| ID | Requirement | Example |
-|---|---|---|
-| FR-1 | Browse and search products | Search for wireless headphones |
-| FR-2 | View product details | See description, price, images and availability |
-| FR-3 | Manage a cart | Add, update or remove an item |
-| FR-4 | Checkout | Validate price, address and stock |
-| FR-5 | Reserve inventory | Temporarily hold stock during checkout |
-| FR-6 | Pay and place an order | Authorize payment and create an order |
-| FR-7 | Track or cancel an order | See status and request cancellation |
-| FR-8 | Manage catalog and stock | Authorized sellers update listings and inventory |
-| FR-9 | Send notifications | Send order confirmation and shipping updates |
+### Non-functional requirements (NFR): how well it works
 
-### Non-functional requirements (NFR) — how well it works
+| Requirement | Meaning |
+|---|---|
+| Performance | Pages should load quickly |
+| Availability | The website should usually be reachable |
+| Scalability | It should handle more users as it grows |
+| Reliability | A confirmed order should not disappear |
+| Security | Customers can access only their own private information |
+| Correctness | The system should not sell the same last item twice |
 
-Targets below are **illustrative design goals**, not claims about Amazon's actual production system.
+**Interview tip:** State your scope before designing. For example: “I’ll cover product browsing, cart, checkout, payment and order tracking. I’ll leave recommendations and seller tools out of the first version.”
 
-| NFR | Example target | Design implication |
-|---|---|---|
-| Availability | 99.95% for core shopping APIs | Redundant instances and zones |
-| Latency | Product reads p95 under 300 ms | Cache, indexes and nearby edge delivery |
-| Durability | Confirmed orders must not be lost | Durable database, backups and recovery tests |
-| Correctness | No overselling beyond business rules | Atomic stock reservation |
-| Security | Protect identities, addresses and payments | Authentication, authorization, encryption |
-| Scalability | Add capacity without redesigning everything | Stateless services, partitioning and queues |
-| Observability | Quickly detect and diagnose failures | Metrics, logs, traces and alerts |
+## 2. 📊 Capacity estimation
 
-**Availability math:** 99.95% availability allows about 21.6 minutes of downtime in a 30-day month. An SLO is a target; measure it rather than assuming it.
+Use simple assumptions and explain that the numbers are estimates, not real Amazon traffic.
 
----
-
-## 2. 📊 Capacity estimation — make assumptions explicit
-
-Estimates are not predictions. They help choose an initial architecture and identify which numbers need validating with real traffic.
-
-### Example workload assumptions
-- 10 million daily active users (DAU)
-- 20 product-detail/list reads per user per day
-- 1 million orders per day
-- Average product API response: 20 KB
-- Peak-to-average traffic multiplier: 5×
-- Average order record plus items and metadata: 2 KB (simplified)
-- Average image payload: 300 KB, typically served through a CDN
+Assume:
+- 1 million active users per day.
+- Each user views 10 product pages daily.
+- Peak traffic is 3 times the average.
+- One product API response is about 20 KB.
+- 100,000 orders are placed per day.
+- One order and its items average 2 KB in this simplified example.
 
 ### Requests per second (RPS)
 
-**Product reads**
-- Daily reads = 10,000,000 × 20 = **200,000,000 reads/day**
-- Average RPS = 200,000,000 ÷ 86,400 ≈ **2,315 RPS**
-- Estimated peak RPS = 2,315 × 5 ≈ **11,575 RPS**, round to **12,000 RPS**
+**Product requests**
+- Daily requests = 1,000,000 × 10 = 10,000,000.
+- Average RPS = 10,000,000 ÷ 86,400 ≈ **116 RPS**.
+- Peak RPS = 116 × 3 ≈ **350 RPS**.
 
 **Orders**
-- Average orders/s = 1,000,000 ÷ 86,400 ≈ **11.6 orders/s**
-- At a 5× peak, approximately **58 orders/s**. Flash sales may be much higher, so model bursts separately.
+- Average = 100,000 ÷ 86,400 ≈ **1.2 orders/second**.
+- At a 3× peak, approximately **3.5 orders/second**.
 
-> ⚠️ **Important:** RPS is not the same as users. One user action can trigger several API calls, and retries can increase load.
+RPS means requests per second. One user action can create several requests.
 
-### Data storage estimate
+### Storage estimate
 
-| Data | Simple calculation | Approximate raw size |
+| Data | Calculation | Approximate size |
 |---|---|---:|
-| Product catalog | 100M products × 2 KB | 200 GB |
-| Orders | 1M/day × 2 KB × 365 days | 730 GB/year |
-| Product images | 100M images × 300 KB | 30 TB |
-| Logs and events | Depends on event volume and retention | Measure separately |
+| Product records | 1 million × 2 KB | 2 GB |
+| Orders for one year | 100,000/day × 2 KB × 365 | 73 GB |
+| Product images | Store separately | Depends on image count and size |
 
-These decimal approximations exclude indexes, replicas, backups, version history, metadata, and storage overhead. Order items can add materially to order size. Images belong in object storage, not as database blobs.
+These estimates exclude indexes, backups, replicas and other overhead.
 
-For a first-pass database budget, multiply raw structured data by a planning factor (for example, 2–4×) for indexes, replicas and overhead, then validate against the chosen database and retention policy.
+### Network and bandwidth
 
-### Network and bandwidth estimate
+At 350 requests/second × 20 KB per response, response traffic is about **7 MB/second**. Images can add much more traffic, so a CDN can help deliver images closer to users.
 
-For 12,000 peak product API responses/s at 20 KB each:
-- Payload throughput = 12,000 × 20 KB = **240,000 KB/s**
-- Approximately **240 MB/s**, or **1.92 Gbit/s**, before protocol overhead.
-- If CDN/cache hits remove 80% of those responses from the origin, origin response traffic could fall to roughly **48 MB/s**, assuming the same response size and request mix.
-
-Images can dominate bandwidth. At 1,000 image requests/s × 300 KB, image delivery is about **300 MB/s**. A CDN can serve much of this near users and reduce origin load. Compression, cache-hit rate, protocol overhead and geography affect actual bandwidth.
-
-### Estimation method
-1. State assumptions.
-2. Calculate daily volume.
-3. Divide by 86,400 for average per-second rate.
-4. Apply a peak factor and model bursts separately.
-5. Estimate payload size × requests/s for bandwidth.
-6. Add indexes, replication, backups and retention for storage.
-7. Revisit assumptions with production telemetry and load tests.
-
----
+**Remember these formulas**
+- Average RPS = daily requests ÷ 86,400.
+- Peak RPS = average RPS × peak factor.
+- Bandwidth ≈ requests/second × average response size.
+- Storage ≈ record count × average record size.
 
 ## 3. 🏗️ High-level architecture
 
-Services are split by business responsibility. They can be deployed and scaled independently, but each extra service adds network calls and operational complexity. Start simpler if traffic and team size do not justify many services.
+This diagram shows the main building blocks and how they connect.
 
 ~~~mermaid
-flowchart TB
-    U["🔵 Customer Web / Mobile"] --> EDGE["🌍 CDN + WAF"]
-    EDGE --> GW["🔵 Load Balancer / API Gateway"]
-    GW --> CAT["🟢 Catalog Service"]
-    GW --> SEARCH["🟢 Search Service"]
-    GW --> CART["🟢 Cart Service"]
-    GW --> ORDER["🟢 Order Service"]
-    GW --> ACCOUNT["🟢 Identity / Profile"]
-    CAT --> REDIS[("🟠 Redis Cache")]
+flowchart TD
+    U["🔵 Customer / App"] --> CDN["🌍 CDN"]
+    CDN --> API["🔷 Load Balancer / API"]
+    API --> CAT["🟢 Product Service"]
+    API --> CART["🟢 Cart Service"]
+    API --> ORD["🟢 Order Service"]
+    CAT --> CACHE[("🟠 Cache")]
     CAT --> PDB[("🟠 Product Database")]
-    SEARCH --> IDX[("🟠 Search Index")]
-    CART --> CDB[("🟠 Cart Store")]
-    ORDER --> ODB[("🔴 Order Database")]
-    ORDER --> INV["🔴 Inventory Service"]
-    ORDER --> PAY["🔴 Payment Service"]
-    INV --> IDB[("🔴 Inventory Database")]
-    PAY --> PSP["💳 Payment Provider"]
-    ORDER --> OUTBOX[("🟠 Transactional Outbox")]
-    OUTBOX --> BUS[["🟣 Event Bus / Queue"]]
-    BUS --> FUL["🟢 Fulfillment"]
-    BUS --> NOTIFY["🟢 Notifications"]
-    BUS --> ANALYTICS["🟢 Analytics"]
-    CAT --> OBJ[("🟠 Object Storage: Images")]
-    classDef edge fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:2px;
-    classDef svc fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:2px;
-    classDef data fill:#ffedd5,stroke:#ea580c,color:#7c2d12,stroke-width:2px;
-    classDef critical fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px;
-    classDef async fill:#f3e8ff,stroke:#9333ea,color:#581c87,stroke-width:2px;
-    class U,EDGE,GW edge;
-    class CAT,SEARCH,CART,ORDER,ACCOUNT,INV,PAY,FUL,NOTIFY,ANALYTICS svc;
-    class REDIS,PDB,IDX,CDB,ODB,IDB,OUTBOX,OBJ data;
-    class INV,PAY,ODB,IDB critical;
-    class BUS async;
+    CART --> CDB[("🟠 Cart Database")]
+    ORD --> ODB[("🔴 Order Database")]
+    ORD --> INV["🔴 Inventory"]
+    ORD --> PAY["🔴 Payment Provider"]
+    ORD --> Q[["🟣 Message Queue"]]
+    Q --> N["🟢 Notifications"]
+    classDef user fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    classDef service fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    classDef store fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+    classDef critical fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
+    classDef async fill:#f3e8ff,stroke:#9333ea,color:#581c87;
+    class U,API,CDN user;
+    class CAT,CART,ORD,N service;
+    class CACHE,PDB,CDB,ODB store;
+    class INV,PAY critical;
+    class Q async;
 ~~~
 
-| Component | Responsibility |
+| Component | What it does |
 |---|---|
-| CDN | Cache public images and other cacheable content close to customers |
-| WAF / API gateway | TLS entry point, request limits, routing and policy enforcement |
-| Catalog | Product details, descriptions and listing metadata |
-| Search | Full-text search, ranking and filters |
-| Cart | Customer's current basket; some eventual consistency is acceptable |
-| Order | Order lifecycle and checkout coordination |
-| Inventory | Authoritative stock counts and reservations |
-| Payment | Payment-provider integration, idempotency and reconciliation |
-| Event bus | Deliver durable events to independent consumers |
-| Object storage | Product images and other large files |
+| CDN | Delivers images and public content from nearby locations |
+| Load balancer | Shares traffic across application instances |
+| Product service | Returns product details |
+| Cart service | Stores selected items |
+| Order service | Coordinates checkout and order status |
+| Inventory | Checks and reserves stock |
+| Payment provider | Processes payment |
+| Database | Saves information |
+| Cache | Keeps frequently used data ready |
+| Message queue | Holds background work, such as sending email |
 
-**Synchronous work:** checkout validation and stock reservation, where the customer needs an immediate result.
+A first version can be a single application and database. Separate services only when there is a clear reason.
 
-**Asynchronous work:** email, analytics, search-index updates and recommendations. Use durable messages, retries with backoff, dead-letter handling, idempotent consumers and queue-age monitoring.
-
----
-
-## 4. 🛍️ Checkout sequence and failure handling
+## 4. 🛒 Checkout flow
 
 ~~~mermaid
 sequenceDiagram
-    autonumber
     actor C as Customer
-    participant G as API Gateway
+    participant A as Shopping API
     participant O as Order Service
-    participant I as Inventory Service
-    participant P as Payment Service
-    participant D as Order DB
-    participant Q as Event Bus
-    C->>G: Submit order + idempotency key
-    G->>O: Authenticated checkout request
-    O->>O: Validate cart, price and address
-    O->>I: Reserve stock
-    I-->>O: Reservation confirmed or rejected
-    O->>P: Authorize payment with idempotency
-    P-->>O: Authorized, declined or pending
-    O->>D: Save order + outbox event atomically
-    D-->>O: Commit successful
-    O-->>C: Return order ID and status
-    Q-->>Q: Publish order event for consumers
-    Note over O,P: If outcome is uncertain, reconcile before retrying side effects
+    participant I as Inventory
+    participant P as Payment Provider
+    participant D as Database
+    C->>A: Place order
+    A->>O: Validate checkout
+    O->>I: Check and reserve stock
+    I-->>O: Stock available
+    O->>P: Request payment
+    P-->>O: Payment result
+    O->>D: Save order status
+    D-->>O: Saved
+    O-->>C: Show order result
 ~~~
 
-A robust workflow is usually a **saga**: a sequence of local transactions with compensating actions rather than one giant distributed database transaction.
+Explain it in your own words:
+1. The customer clicks **Place Order**.
+2. The system validates the cart, current price and delivery details.
+3. Inventory checks and reserves stock.
+4. The payment provider processes payment.
+5. The order status is saved.
+6. The customer sees the result.
 
-1. Validate the latest price and cart contents on the server.
-2. Reserve stock atomically with an expiry time.
-3. Authorize payment using a stable idempotency key.
-4. Persist order state and an outbox event in one database transaction.
-5. Publish the event from the outbox; consumers must tolerate duplicate delivery.
-6. Capture payment / confirm the order according to the business workflow.
-7. If payment is declined, release the reservation. If the result is unknown, query the provider rather than blindly charging again.
-
-**Why the transactional outbox matters:** saving an order and publishing an event as unrelated operations can lose the event if the process crashes between them. An outbox relay publishes committed records later.
-
----
+If payment fails, do not mark the order as paid; release the stock reservation when appropriate. If payment times out, check the payment status before trying again.
 
 ## 5. 🗂️ Data model
 
-Use a relational database for core transactional data when relationships, constraints and multi-row transactions matter. A search index is optimized for search, Redis for fast temporary lookups, and object storage for images.
+A data model describes the main information the application stores and how it is related.
 
 ~~~mermaid
 erDiagram
-    USER ||--o{ CART_ITEM : owns
-    USER ||--o{ ORDER : places
-    CART ||--o{ CART_ITEM : contains
+    CUSTOMER ||--o{ ORDER : places
     ORDER ||--|{ ORDER_ITEM : contains
-    PRODUCT ||--o{ ORDER_ITEM : referenced_by
-    PRODUCT ||--o{ INVENTORY : stocked_as
-    ORDER ||--o{ PAYMENT : attempts
-    ORDER ||--o{ STOCK_RESERVATION : reserves
-    USER {
-      uuid user_id PK
-      string email UK
-      string status
+    PRODUCT ||--o{ ORDER_ITEM : included_in
+    CUSTOMER ||--o{ CART_ITEM : owns
+    PRODUCT ||--o{ CART_ITEM : selected
+    CUSTOMER {
+        string customer_id PK
+        string name
+        string email
     }
     PRODUCT {
-      uuid product_id PK
-      uuid seller_id
-      string title
-      decimal current_price
-      string status
-    }
-    INVENTORY {
-      uuid product_id PK
-      string warehouse_id PK
-      int available_quantity
-      int reserved_quantity
-      int version
+        string product_id PK
+        string title
+        decimal price
     }
     ORDER {
-      uuid order_id PK
-      uuid user_id
-      string status
-      decimal total_amount
-      string currency
-      datetime created_at
+        string order_id PK
+        string customer_id FK
+        string status
+        decimal total
     }
     ORDER_ITEM {
-      uuid order_id PK
-      int line_number PK
-      uuid product_id
-      int quantity
-      decimal unit_price_snapshot
+        string order_id FK
+        string product_id FK
+        int quantity
+        decimal price_at_purchase
     }
-    PAYMENT {
-      uuid payment_id PK
-      uuid order_id
-      string provider_reference
-      string status
-      string idempotency_key UK
+    CART_ITEM {
+        string customer_id FK
+        string product_id FK
+        int quantity
     }
 ~~~
 
-### Important modeling decisions
-- Store a price snapshot on each order item because catalog prices may change later.
-- Use decimal/fixed-point values or integer minor units (paise/cents) for money, never floating-point arithmetic.
-- Track inventory by product and warehouse. Update available and reserved quantities atomically.
-- Use explicit order/payment state machines rather than many unrelated booleans.
-- Store payment-provider tokens/references, not raw card numbers or CVVs.
-- Add indexes for real query patterns, such as user ID plus creation time for order history.
-- Document which service owns each record; avoid multiple services writing directly to the same tables.
+- **Customer:** who is shopping.
+- **Product:** what is being sold.
+- **Cart item:** what the customer plans to buy.
+- **Order:** the purchase and its status.
+- **Order item:** each product, quantity and purchase-time price.
 
----
+Store the price at the time of purchase. A later price change should not rewrite an older order.
+
+### Where should data be stored?
+
+| Data | Beginner-friendly choice | Why |
+|---|---|---|
+| Customers and orders | Relational database, such as PostgreSQL | Relationships and transactions |
+| Product search | Search index, if advanced search is needed | Text search and filters |
+| Frequently read products | Cache, such as Redis | Faster repeated reads |
+| Product images | Object storage + CDN | Large files and efficient delivery |
+| Background work | Message queue | Work can happen outside the customer request |
+
+Explain the reason for each choice instead of just listing technologies.
 
 ## 6. 🔌 API contracts
 
-A contract specifies method, path, input, output and error behavior. These examples are illustrative JSON contracts, not a complete OpenAPI specification.
+An API lets one part of an application ask another part to do something. The method and path describe the action.
 
-### Browse products
+### Find products
 
 ~~~http
-GET /v1/products?query=headphones&page=1&pageSize=20
-Authorization: Bearer <access-token>
+GET /v1/products?query=headphones
 ~~~
 
 ~~~json
 {
   "items": [
     {
-      "productId": "prd_123",
+      "productId": "p101",
       "title": "Wireless Headphones",
-      "price": { "amount": "79.99", "currency": "USD" },
-      "availability": "IN_STOCK",
-      "imageUrl": "https://cdn.example.com/products/prd_123.webp"
+      "price": 79.99,
+      "currency": "USD"
     }
-  ],
-  "page": 1,
-  "pageSize": 20,
-  "hasMore": true
+  ]
 }
 ~~~
 
-### Add an item to a cart
+### Add an item to the cart
 
 ~~~http
-POST /v1/carts/items
-Authorization: Bearer <access-token>
+POST /v1/cart/items
 Content-Type: application/json
 ~~~
 
 ~~~json
 {
-  "productId": "prd_123",
+  "productId": "p101",
   "quantity": 2
 }
 ~~~
 
-Validate quantity and product eligibility on the server; never trust a client-supplied price.
-
-### Create an order
+### Place an order
 
 ~~~http
 POST /v1/orders
-Authorization: Bearer <access-token>
-Idempotency-Key: 6f5f1f3c-unique-checkout-attempt
 Content-Type: application/json
+Idempotency-Key: checkout-abc-123
 ~~~
 
 ~~~json
 {
-  "cartId": "cart_456",
-  "shippingAddressId": "addr_789",
-  "paymentMethodToken": "provider_token_abc"
+  "cartId": "cart123",
+  "shippingAddressId": "address456",
+  "paymentMethodToken": "provider-token"
 }
 ~~~
 
@@ -354,512 +286,278 @@ Example response:
 
 ~~~json
 {
-  "orderId": "ord_123",
-  "status": "PENDING",
-  "total": { "amount": "159.98", "currency": "USD" },
-  "createdAt": "2026-10-14T10:00:00Z"
+  "orderId": "order789",
+  "status": "PENDING"
 }
 ~~~
 
-Return **201 Created** when a new order resource is created. If checkout is still processing, return a documented pending state or **202 Accepted**. Repeating the same idempotency key with the same request should return the same logical result; reject reuse with a different payload.
+The server must calculate the real price and check stock; do not trust a price sent by the browser. An idempotency key helps prevent a repeated checkout request from creating duplicate orders or charges.
 
-### Read an order
-
-~~~http
-GET /v1/orders/ord_123
-Authorization: Bearer <access-token>
-~~~
-
-Only the owner or an authorized operator may read the order. Use cursor pagination for large order histories.
-
-| Situation | Example response |
-|---|---|
-| Invalid request | 400 Bad Request |
-| Missing/invalid authentication | 401 Unauthorized |
-| Authenticated but not permitted | 403 Forbidden |
-| Resource not found | 404 Not Found |
-| Stock unavailable / conflicting state | 409 Conflict |
-| Rate limit exceeded | 429 Too Many Requests |
-| Temporary dependency failure | 503 Service Unavailable |
-
-Use versioned contracts, validation, timeouts, pagination, consistent error bodies, correlation IDs and backward-compatible changes. Do not expose internal exception messages.
-
----
+**Common HTTP responses**
+- `200 OK` — request succeeded.
+- `201 Created` — a resource was created.
+- `400 Bad Request` — input is invalid.
+- `401 Unauthorized` — sign-in or valid authentication is required.
+- `403 Forbidden` — the user is not allowed to do this.
+- `404 Not Found` — resource does not exist.
+- `409 Conflict` — for example, stock is no longer available.
+- `429 Too Many Requests` — too many requests were sent.
+- `500 Internal Server Error` — unexpected server problem.
 
 ## 7. ⚡ Caching
 
-Caching keeps frequently requested data closer to the application. Think of it like keeping popular products on a nearby shelf rather than walking to the warehouse for every request.
+Caching keeps a copy of frequently requested data so the application does not need to read the database every time. Think of it as keeping popular products on a nearby shelf.
 
 ~~~mermaid
 flowchart TD
-    R["🟦 Request product"] --> C{"⚡ Cache hit?"}
-    C -->|Yes| V["🟢 Return cached value"]
-    C -->|No| DB[("🟠 Read product database")]
-    DB --> SET["⚡ Store value with TTL"]
-    SET --> V
-    W["✏️ Product update"] --> DBW[("🟠 Commit database change")]
-    DBW --> INV["🧹 Invalidate/update cache"]
-    classDef request fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    R["🟦 Product request"] --> C{"⚡ In cache?"}
+    C -->|Yes| V["🟢 Return cached data"]
+    C -->|No| D[("🟠 Read database")]
+    D --> S["⚡ Save in cache"]
+    S --> V
+    classDef req fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
     classDef cache fill:#f3e8ff,stroke:#9333ea,color:#581c87;
-    classDef data fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
-    class R,V request;
-    class C,SET,INV cache;
-    class DB,DBW data;
+    classDef db fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+    class R,V req;
+    class C,S cache;
+    class D db;
 ~~~
 
-Good cache candidates: product details, category lists, public images via CDN, and search suggestions. Use a TTL and a clear invalidation strategy. Plan for cache misses, outages, stampedes and hot keys; techniques include request coalescing, randomized TTLs and stale-while-revalidate.
+- **Cache hit:** the item is already cached.
+- **Cache miss:** read it from the database, then optionally cache it.
+- **TTL:** how long cached data stays before it expires.
+- **Invalidation:** remove or update cached data when the original changes.
 
-**Never treat cached values as the source of truth** for stock reservation, payment status or authorization. A cache can display an approximate stock hint; inventory must make the final atomic decision.
-
----
+Cache product descriptions and images. Always verify stock with the inventory system before confirming an order.
 
 ## 8. 🪞 Replication
 
-Replication keeps copies of data on more than one node. It helps availability and read throughput, but it does not automatically solve every failure or consistency problem.
-
-~~~mermaid
-flowchart LR
-    APP["🟦 Application"] --> P[("🟠 Primary / Leader")]
-    P -->|Replicate changes| R1[("🟢 Replica A")]
-    P -->|Replicate changes| R2[("🟢 Replica B")]
-    APP -->|Read-only query| R1
-    APP -->|Read-only query| R2
-    P -->|Failover when safe| R1
-~~~
-
-- **Leader/follower:** writes usually go to a leader; followers replay changes and may lag.
-- **Synchronous replication:** waits for replica acknowledgement before confirming a write. It can improve durability but adds latency and may reduce write availability during network problems.
-- **Asynchronous replication:** acknowledges earlier and copies changes later. It is faster, but failover can lose recently acknowledged writes if they were not replicated.
-- **Failover:** promote an eligible replica using a controlled process that prevents two leaders from accepting writes (split brain).
-
-Route read-after-write queries to the leader or use a consistency token/session policy when users must immediately see their own update. Monitor replication lag and test failover, backups and restoration.
-
----
-
-## 9. 🧩 Sharding / partitioning
-
-Sharding splits one logical dataset across multiple database partitions. It helps when a single database cannot handle the required storage, throughput or working set.
+Replication means keeping copies of the same data on more than one database server. It can improve availability and help serve more reads.
 
 ~~~mermaid
 flowchart TD
-    APP["🟦 Order Service"] --> ROUTER{"🧭 Shard router"}
-    ROUTER -->|Customer range/hash A| S1[("🟠 Orders Shard A")]
-    ROUTER -->|Customer range/hash B| S2[("🟠 Orders Shard B")]
-    ROUTER -->|Customer range/hash C| S3[("🟠 Orders Shard C")]
-    S1 --> REP1[("Replica A")]
-    S2 --> REP2[("Replica B")]
-    S3 --> REP3[("Replica C")]
+    A["🟦 Application"] --> P[("🟠 Primary Database")]
+    P --> R1[("🟢 Read Replica 1")]
+    P --> R2[("🟢 Read Replica 2")]
+    A -. "Read some data" .-> R1
+    A -. "Read some data" .-> R2
+    classDef app fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    classDef primary fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+    classDef replica fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    class A app;
+    class P primary;
+    class R1,R2 replica;
 ~~~
 
-Common strategies:
-- **Range-based:** nearby keys go together. Good for range scans, but sequential IDs can create hotspots.
-- **Hash-based:** spreads writes more evenly, but range queries across keys become harder.
-- **Directory-based:** maps each tenant/customer to a shard. Flexible, but the directory must be highly available.
-- **Geographic:** places data near a region for latency or residency needs, with clear ownership and failover rules.
+- The **primary** usually handles writes.
+- **Replicas** keep copies and may serve some reads.
+- Replicas can lag behind the primary for a short time.
+- If a user just changed an order, read from a source that can show the latest update.
 
-Choose a shard key based on common queries, write distribution and data ownership. Avoid a key that sends all flash-sale writes for one popular product to one partition. Cross-shard joins and transactions are more complex; design APIs to minimize them.
+**Remember:** replication copies data; sharding splits data into separate parts.
 
----
+## 9. 🧩 Sharding
+
+Sharding splits a large dataset across multiple databases. Imagine distributing customers' orders between several storage rooms instead of keeping every order in one room.
+
+~~~mermaid
+flowchart TD
+    A["🟦 Order Service"] --> R{"🧭 Choose shard"}
+    R --> S1[("🟠 Shard A: Customers 1–1000")]
+    R --> S2[("🟠 Shard B: Customers 1001–2000")]
+    R --> S3[("🟠 Shard C: Customers 2001–3000")]
+    classDef app fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    classDef router fill:#f3e8ff,stroke:#9333ea,color:#581c87;
+    classDef shard fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+    class A app;
+    class R router;
+    class S1,S2,S3 shard;
+~~~
+
+Common approaches:
+- **Range-based:** assign ranges of customer IDs to different shards.
+- **Hash-based:** calculate a hash from an ID to choose a shard.
+- **Directory-based:** look up which shard owns a customer.
+
+Sharding can increase capacity, but adds complexity. First consider indexes, query optimization and read replicas. Explain what problem sharding solves before recommending it.
 
 ## 10. 🔄 Consistent hashing
 
-Consistent hashing distributes keys across a changing set of cache or service nodes while minimizing how many keys move when nodes are added or removed.
+Consistent hashing assigns keys to servers so adding or removing a server usually moves fewer keys than a simple modulo-based approach.
 
-Imagine a circular track numbered from 0 to 2³²−1. Hash each node and key onto the track. A key belongs to the first node encountered clockwise. Virtual nodes place each physical server at multiple positions to improve balance.
+Imagine servers around a circle. Hash a product key onto the same circle and assign it to the next server clockwise.
 
 ~~~mermaid
 flowchart TD
-    K["🔑 Key: product-123"] --> H["#️⃣ Hash key"]
-    H --> R["⭕ Find next clockwise node on ring"]
-    R --> N["🟢 Node B owns key"]
-    ADD["➕ Add Node D"] --> RING["🔁 Reassign keys in affected ring segments"]
-    R --> RING
+    K["🔑 Product key"] --> H["#️⃣ Calculate hash"]
+    H --> R["⭕ Find next server on ring"]
+    R --> N["🟢 Selected server"]
+    A["➕ Add a server"] --> M["🔁 Move only affected keys"]
     classDef key fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
     classDef hash fill:#f3e8ff,stroke:#9333ea,color:#581c87;
-    classDef node fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    classDef server fill:#dcfce7,stroke:#16a34a,color:#14532d;
     class K key;
-    class H,R,RING hash;
-    class N,ADD node;
+    class H,R,M hash;
+    class N,A server;
 ~~~
 
-With simple modulo hashing, changing the number of nodes can remap many keys. Consistent hashing usually limits movement to a smaller portion of the keyspace. It is common in distributed caches and some partition-routing designs.
+**Why it matters in interviews:** it helps distribute cache keys or data across servers while reducing how much needs to move when the server group changes. It does not automatically provide backups or copy the data.
 
-It is not a complete sharding strategy by itself. You still need replication, rebalancing, failure detection, hot-key handling and safe data migration.
+## 11. 🚀 Performance and scaling
 
----
+Performance means how quickly the system responds. Scaling means increasing capacity when more people use it.
 
-## 11. 🚀 Performance optimization
+| Problem | Possible solution |
+|---|---|
+| Product pages are slow | Check database queries and add useful indexes |
+| Popular products are read repeatedly | Use a cache and CDN |
+| One application server is overloaded | Add more application instances |
+| Database reads are too high | Cache reads or consider read replicas |
+| Emails delay checkout | Send emails through a background queue |
+| One product gets extremely popular | Protect the hot key and control incoming traffic |
 
-Optimize from measurements, not guesses.
-
-1. **Measure latency percentiles:** p50, p95 and p99 reveal slow-tail behavior hidden by averages.
-2. **Reduce network round trips:** avoid chatty service calls and fetch only required fields.
-3. **Optimize database queries:** inspect query plans, add useful indexes and avoid N+1 queries.
-4. **Cache read-heavy data:** use CDN and application caches with clear freshness rules.
-5. **Paginate results:** prefer cursor pagination for large or changing datasets.
-6. **Move slow side effects off the request path:** queue notifications and analytics.
-7. **Apply timeouts and bounded retries:** use exponential backoff with jitter; never retry non-idempotent actions blindly.
-8. **Protect against overload:** rate limits, bulkheads, bounded queues and load shedding.
-9. **Compress appropriately:** reduce large responses while measuring CPU cost.
-10. **Load-test realistic journeys:** include cache misses, flash-sale traffic, failures and ramp-up.
-
-A useful diagnostic order is **client/edge → gateway → service → database/dependency → network**. Find where time is spent before adding machines.
-
----
-
-## 12. 📈 Scaling strategy
-
-- **Vertical scaling:** give a machine more CPU/RAM/IOPS. Easy initially, but has an upper limit.
-- **Horizontal scaling:** add instances. Works well for stateless APIs behind a load balancer.
-- **Read scaling:** cache, CDN and database read replicas.
-- **Write scaling:** partitioning/sharding, batching where safe, and reducing unnecessary writes.
-- **Workload smoothing:** queues and rate limits absorb bursts, provided queue capacity and processing delay are bounded.
-- **Autoscaling:** scale on useful signals such as request concurrency, CPU, queue age and latency; scale down gradually to avoid oscillation.
+- **Vertical scaling:** give one server more CPU, memory or storage.
+- **Horizontal scaling:** add more servers and share traffic between them.
 
 ~~~mermaid
 flowchart TD
-    T["📈 Traffic or latency increases"] --> D{"Where is the bottleneck?"}
-    D -->|API CPU / concurrency| A["↔️ Add stateless API replicas"]
-    D -->|Repeated reads| C["⚡ CDN / cache / read replicas"]
-    D -->|Database writes| S["🧩 Partition, shard or optimize writes"]
-    D -->|Slow side effects| Q["🟣 Queue + worker pool"]
-    D -->|One hot key| H["🔥 Hot-key protection / key redesign"]
-    classDef input fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+    T["📈 Traffic increases"] --> Q{"Where is the bottleneck?"}
+    Q -->|Application| H["↔️ Add app instances"]
+    Q -->|Repeated reads| C["⚡ Cache / CDN"]
+    Q -->|Database reads| R["🪞 Read replicas"]
+    Q -->|Database capacity| S["🧩 Consider sharding"]
+    classDef start fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
     classDef choice fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
-    classDef action fill:#dcfce7,stroke:#16a34a,color:#14532d;
-    class T input;
-    class D choice;
-    class A,C,S,Q,H action;
+    classDef solution fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    class T start;
+    class Q choice;
+    class H,C,R,S solution;
 ~~~
 
-Scale the bottleneck rather than scaling every component equally. More replicas do not fix a slow query, hot partition, lock contention or downstream rate limit.
+In an interview, explain why your solution helps. Adding servers will not automatically fix a slow database query.
 
----
+## 12. 🛡️ High availability
 
-## 13. 🛡️ High availability and disaster recovery
+High availability means the website continues working when a component fails, or recovers quickly.
 
-High availability (HA) means the service can continue operating through expected failures. Disaster recovery (DR) is about restoring service and data after a larger outage.
+- Run more than one application instance.
+- Use a load balancer to send traffic to healthy instances.
+- Back up important data and test restoring it.
+- Use replicas and a tested failover process where appropriate.
+- Use timeouts and limited retries when calling other services.
+- Avoid a single component whose failure brings down everything.
 
-- Deploy critical instances across multiple availability zones.
-- Use health checks, load balancing and graceful draining during deployments.
-- Avoid a single point of failure in gateways, credentials, queues and critical data stores.
-- Use redundant dependencies and documented failover procedures.
-- Back up data and **regularly test restores**; a successful backup job is not proof that recovery works.
-- Define **RTO** (how quickly service must be restored) and **RPO** (how much data loss is acceptable).
-- Use circuit breakers, timeouts, bulkheads and bounded queues to stop one failing dependency from cascading across the platform.
-- Practice regional failover and verify DNS, secrets, replication, payment-provider connectivity and operational access.
+**Interview example:** If one application server fails, the load balancer sends requests to healthy instances. If the database fails, recovery depends on its replication, backups and failover design.
 
-Not every service needs the same HA target. Browsing may degrade gracefully; payment and order correctness require controlled recovery and reconciliation.
+## 13. ⚖️ Consistency and CAP theorem
 
----
+### Consistency in simple terms
 
-## 14. ⚖️ Consistency and the CAP theorem
+- **Strong consistency:** reads see the latest successful update according to the system's guarantees. Useful for inventory and important order changes.
+- **Eventual consistency:** copies may briefly differ but catch up later. Often acceptable for search results and recommendations.
+- **Read-your-writes:** a customer sees their own recent change, such as an item added to their cart.
 
-### Consistency choices
-- **Strong consistency:** after a successful write, a read observes that write according to the database's guarantees. Useful for inventory reservations and critical order state.
-- **Eventual consistency:** replicas or derived views may temporarily differ but converge if updates stop. Useful for search indexes, recommendations, review counts and analytics.
-- **Read-your-writes:** a customer sees their own cart/order update immediately, even if other readers may briefly see older data.
+### CAP theorem
 
-Use the weakest consistency model that still satisfies the business requirement. Stronger guarantees can cost latency or availability, depending on the database and failure conditions.
+CAP describes a distributed system when a network partition occurs—when parts of the system cannot reliably communicate.
 
-### CAP theorem, in plain English
+- **C — Consistency:** reads follow the system's latest-data guarantee.
+- **A — Availability:** working nodes return responses to requests.
+- **P — Partition tolerance:** the system can deal with communication failures between nodes.
 
-CAP describes a distributed data system during a **network partition**—when nodes cannot reliably communicate. It cannot simultaneously guarantee both:
-
-- **Consistency (C):** every successful read returns the latest committed value according to a single-copy model.
-- **Availability (A):** every request to a non-failed node receives a non-error response.
-- **Partition tolerance (P):** the system continues to operate despite messages being lost or delayed between parts of the system.
-
-When a partition occurs, a system must choose whether to reject/delay some operations to preserve consistency, or continue responding with the possibility of stale/conflicting results. In real distributed systems, partition tolerance is not optional if the system must span unreliable networks; the practical trade-off is often between consistency and availability during a partition.
+During a partition, a distributed system generally must choose between rejecting or delaying some requests to preserve consistency, or continuing to respond when data may be stale or conflicting.
 
 ~~~mermaid
 flowchart TD
-    PART["🌐 Network partition occurs"] --> CHOICE{"Choose behavior for this operation"}
-    CHOICE -->|Reject / wait for safe quorum| C["🔴 Preserve consistency"]
-    CHOICE -->|Respond despite uncertain peer state| A["🟢 Favor availability"]
-    C --> EX1["Example: reject a risky stock write"]
-    A --> EX2["Example: show cached catalog data"]
-    classDef partition fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
-    classDef consistent fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
-    classDef available fill:#dcfce7,stroke:#16a34a,color:#14532d;
-    class PART,CHOICE partition;
-    class C,EX1 consistent;
-    class A,EX2 available;
+    P["🌐 Network connection breaks"] --> D{"Choose behavior for this operation"}
+    D --> C["🔴 Preserve consistency: wait or reject"]
+    D --> A["🟢 Favor availability: respond with possible stale data"]
+    C --> X["Example: protect the last item in stock"]
+    A --> Y["Example: show cached product details"]
+    classDef problem fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+    classDef con fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
+    classDef avail fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    class P,D problem;
+    class C,X con;
+    class A,Y avail;
 ~~~
 
-**E-commerce application:** prefer correctness for inventory reservation, payment and order transitions. Allow eventual consistency for search results, recommendations and analytics. A system can make different choices for different operations; CAP is not a label that means an entire product is simply CP or AP in every circumstance.
+**Interview takeaway:** protect correctness for inventory and orders. Product browsing can often tolerate slightly old information. Explain the trade-off for each feature rather than labelling the entire website “CP” or “AP.”
 
----
+## 14. 🔐 Security basics
 
-## 15. 🔐 Security
+- **Authentication:** confirm who the customer is.
+- **Authorization:** check that the customer is allowed to view an order.
+- **HTTPS/TLS:** protect data while it travels over the network.
+- **Input validation:** reject invalid quantities and malformed requests.
+- **Rate limiting:** restrict excessive requests and help prevent abuse.
+- **Payment safety:** use a trusted payment provider and avoid storing raw card details.
+- **Privacy:** do not expose passwords, tokens or private customer data in logs.
 
-Security is part of the architecture, not a final checkbox.
+Example: knowing an order ID must not be enough for a stranger to view another customer's delivery address.
 
-- **Authentication:** OAuth 2.0 / OpenID Connect with short-lived tokens; MFA for sensitive account actions.
-- **Authorization:** enforce ownership and role checks on the server for customers, sellers, support staff and administrators.
-- **Transport and storage:** TLS in transit, encryption at rest, managed secrets and key rotation.
-- **Payments:** use a reputable payment provider and tokenization; never store CVV and avoid handling raw card data unless appropriately certified.
-- **Input validation:** validate schemas, quantity limits, addresses, uploaded files and query parameters.
-- **Abuse prevention:** per-user/IP rate limits, bot mitigation, checkout velocity controls and fraud signals.
-- **Least privilege:** separate service identities and narrowly scoped database/cloud permissions.
-- **Auditability:** log privileged actions and security events without logging passwords, tokens, card data or unnecessary personal information.
-- **Supply chain:** patch dependencies, scan images and dependencies, protect CI/CD credentials and review infrastructure changes.
-- **Privacy:** collect only necessary personal data, set retention rules and restrict access to order/address information.
+## 15. 🔭 Monitoring basics
 
-Threat-model checkout, account takeover, coupon abuse, inventory manipulation, payment replay and data exfiltration. Security controls should be tested continuously.
+Monitoring helps the team notice when something is wrong.
 
----
-
-## 16. 🔭 Monitoring and observability
-
-Monitoring tells you **that** something is wrong; logs and traces help explain **why**.
-
-| Area | Signals |
+| Signal | Why it matters |
 |---|---|
-| API | Request rate, p50/p95/p99 latency, 4xx/5xx rate, timeouts |
-| Database | CPU, connections, slow queries, locks, storage, replication lag |
-| Cache | Hit ratio, evictions, latency, hot keys, connection errors |
-| Inventory | Reservation success/failure, conflicts, expired reservations |
-| Payment | Authorization/decline rate, timeouts, duplicate attempts, reconciliation backlog |
-| Queue | Consumer lag, oldest message age, retries, dead-letter count |
-| Infrastructure | CPU, memory, disk, network, pod restarts and saturation |
-| Business | Checkout conversion, order success rate, cancellations and refund rate |
+| Request count | Shows incoming traffic |
+| Response time | Shows whether the website is slow |
+| Error rate | Shows how many requests fail |
+| CPU and memory | Helps find overloaded servers |
+| Database health | Helps identify slow queries or connection problems |
+| Payment failures | Shows checkout problems |
+| Queue backlog | Shows whether background work is falling behind |
 
-Use structured logs with request/correlation IDs, distributed traces across services, dashboards for technical health and business outcomes, alerts tied to user impact, actionable runbooks and synthetic checks. Do not put sensitive personal data, access tokens or payment information into logs.
+- **Metrics:** numbers over time, such as response time.
+- **Logs:** records of events and errors.
+- **Traces:** follow one request across services.
 
----
+For an interview, explain what you would check first rather than designing a complete monitoring platform.
 
-## 17. 🧪 Failure scenarios to discuss in an interview
+## 16. 🎤 Common interview questions
 
-| Failure | Safer response |
-|---|---|
-| Cache is unavailable | Bypass carefully, limit database pressure and degrade noncritical reads |
-| Inventory service times out | Do not assume stock was reserved; query status or retry idempotently |
-| Payment times out | Treat result as unknown, query provider and reconcile before repeating |
-| Event delivered twice | Consumer deduplicates by event ID or business key |
-| Event publish fails after DB commit | Transactional outbox retries publishing |
-| Replica is stale | Route critical read to leader or use read-your-writes policy |
-| One product becomes extremely popular | Protect hot keys, queue requests and partition work where possible |
-| A region fails | Follow tested failover procedure aligned to RTO/RPO |
-| Database reaches capacity | Apply backpressure, optimize queries and plan safe partitioning |
+**Why use a cache?** To reduce repeated database reads and improve response time.
 
----
+**Replication vs sharding?** Replication keeps copies; sharding divides data into parts.
 
-## 18. 🎤 Interview-ready summary
+**How do you avoid overselling?** Reserve stock atomically in the inventory system. Do not rely only on cached stock.
 
-A strong answer follows a logical sequence:
-1. Clarify scope and list functional/non-functional requirements.
-2. Estimate traffic, storage and bandwidth using stated assumptions.
-3. Draw the high-level architecture and explain each component.
-4. Define data ownership, core entities and API contracts.
-5. Walk through checkout, including idempotency and failure compensation.
-6. Explain caching, replication, sharding and consistent hashing only where justified.
-7. Discuss consistency and CAP trade-offs for each type of data.
-8. Finish with HA/DR, security, monitoring, bottlenecks and growth paths.
+**Why use a queue?** To handle background tasks, such as sending email, without making the customer wait.
 
-### Common follow-up questions
-- **How do you prevent overselling?** Use atomic reservations, conditional updates, idempotency and expiration/compensation.
-- **What if payment succeeds but the order update fails?** Use durable state, provider reconciliation, idempotent retries and compensating actions.
-- **Why use an event bus?** It decouples slow side effects and lets independent consumers process durable events.
-- **Why not shard immediately?** Sharding adds operational and query complexity. First measure, optimize and scale vertically/read replicas where appropriate.
-- **What is the role of consistent hashing?** Reduce key movement as cache/partition nodes change; it does not replace replication or data migration plans.
-- **Can a system be fully consistent and always available across a network partition?** Not under CAP's distributed-system assumptions; define behavior per operation.
+**What is horizontal scaling?** Adding more application instances to share traffic.
 
----
+**When would you shard a database?** When measurements show one database cannot meet storage or throughput needs and simpler optimizations are insufficient.
 
-## ✅ Final checklist
-- [ ] Requirements and measurable NFRs
-- [ ] Capacity assumptions, RPS, storage and bandwidth
-- [ ] High-level architecture and checkout sequence
-- [ ] Data model, ownership and indexes
-- [ ] API request/response and error contracts
-- [ ] Cache strategy and invalidation
-- [ ] Replication and lag handling
-- [ ] Sharding key and hot-partition strategy
-- [ ] Consistent hashing and rebalancing
-- [ ] Performance testing and scaling
-- [ ] HA, backup, RTO and RPO
-- [ ] Consistency and CAP trade-offs
-- [ ] Authentication, authorization and data protection
-- [ ] Metrics, logs, traces, alerts and runbooks
+**What is consistent hashing?** A way to distribute keys across servers while reducing key movement when servers change.
 
-## 🏷️ Tags
-#SystemDesign #SystemDesignInterview #DistributedSystems #Scalability #HighAvailability #Caching #Sharding #ConsistentHashing #CAPTheorem #DatabaseDesign #PerformanceEngineering #CloudArchitecture #BackendEngineering #SoftwareArchitecture #InterviewPreparation
+**What is CAP?** During a network partition, a system faces a trade-off between responding to requests and preserving a consistent view of data.
 
-> ⭐ **Takeaway:** Design for correctness first on checkout, inventory and payments; optimize browsing for speed; then scale the measured bottlenecks. A good system design is a set of explicit trade-offs, not just a large diagram.
+**How do you protect customer orders?** Authenticate users, verify order ownership, encrypt traffic and restrict access to private data.
 
+**What would you do if the website became slow?** Check response-time metrics and logs, find whether the bottleneck is the application, database or another dependency, then optimize that part.
 
----
+## ✅ Beginner interview checklist
 
-## 19. 🗄️ Data storage choices — choose by access pattern
+- [ ] Explain functional and non-functional requirements.
+- [ ] Calculate basic RPS, storage and bandwidth.
+- [ ] Draw a simple high-level architecture.
+- [ ] Explain the data model and API examples.
+- [ ] Describe caching.
+- [ ] Explain replication vs sharding.
+- [ ] Describe consistent hashing at a high level.
+- [ ] Compare vertical and horizontal scaling.
+- [ ] Explain high availability and basic failure handling.
+- [ ] Explain consistency and CAP trade-offs.
+- [ ] Cover security and monitoring basics.
 
-There is no single database that is best for every part of an e-commerce platform. Choose a store based on the questions the application asks of the data.
+## ⭐ Final interview advice
 
-| Data / workload | Suitable starting choice | Why | Watch out for |
-|---|---|---|---|
-| Orders and payment state | Relational database (e.g., PostgreSQL/MySQL) | Transactions, constraints and reliable state changes | Index growth, lock contention and connection limits |
-| Product catalog | Relational or document database | Flexible product attributes and clear ownership | Category-specific attributes can complicate schemas |
-| Full-text search and filters | Search engine/index | Text relevance, facets and typo-tolerant search | Index is a derived view; it can lag behind the catalog |
-| Cart | Redis or durable key-value/document store | Fast reads/writes by customer or cart ID | Expiry, persistence and cross-device behavior |
-| Inventory | Transactional relational/key-value store with conditional writes | Atomic reservation and concurrency control | Hot SKUs and contention require careful design |
-| Product images | Object storage + CDN | Cheap durable blob storage and global delivery | Image resizing, cache invalidation and access controls |
-| Events and asynchronous jobs | Durable message broker/event stream | Decouples producers from consumers | Duplicate delivery, retries, ordering and backlog |
-| Analytics | Warehouse/lakehouse | Large scans and historical reporting | Keep analytical workloads away from checkout databases |
+You do not need to design every detail perfectly. Start with the requirements, draw a simple design, explain how a customer request flows through it, and introduce advanced concepts only when they solve a clear problem.
 
-**Practical rule:** use a relational database first for orders and inventory unless measurements or business requirements justify a different design. Polyglot persistence adds operational overhead; every extra database needs backups, monitoring, access controls and a recovery plan.
+**A good beginner answer is clear, structured and easy to follow—not packed with jargon.**
 
-### Example: prevent overselling with an atomic stock reservation
+## 🏷️ Hashtags
 
-A naive flow—read stock, then subtract stock in a second request—has a race condition. Two checkout requests may both read “1 item left.” Instead, perform the check and update as one atomic database operation, or use a transaction/conditional write with equivalent guarantees.
-
-~~~sql
-UPDATE inventory
-SET available_quantity = available_quantity - :quantity,
-    reserved_quantity = reserved_quantity + :quantity,
-    version = version + 1
-WHERE product_id = :product_id
-  AND warehouse_id = :warehouse_id
-  AND available_quantity >= :quantity;
-~~~
-
-If the update affects one row, the reservation succeeded. If it affects zero rows, stock is insufficient or the requested inventory record does not exist. In production, also create a reservation ID with an expiry time and make the operation idempotent so a retry cannot reserve twice. Release expired reservations safely and reconcile reservation state after failures.
-
----
-
-## 20. 🔌 More API contracts: inventory, payment and order status
-
-### Reserve inventory
-
-~~~http
-POST /v1/inventory/reservations
-Authorization: Bearer <service-access-token>
-Idempotency-Key: checkout-attempt-ord_123
-Content-Type: application/json
-~~~
-
-~~~json
-{
-  "orderId": "ord_123",
-  "items": [
-    { "productId": "prd_123", "warehouseId": "wh_01", "quantity": 2 }
-  ],
-  "expiresInSeconds": 600
-}
-~~~
-
-Example success response:
-
-~~~json
-{
-  "reservationId": "res_456",
-  "status": "RESERVED",
-  "expiresAt": "2026-10-14T10:10:00Z"
-}
-~~~
-
-Return a documented conflict response when there is not enough stock. Do not expose internal warehouse or database details unnecessarily.
-
-### Payment status
-
-~~~http
-GET /v1/payments/pay_123
-Authorization: Bearer <access-token>
-~~~
-
-~~~json
-{
-  "paymentId": "pay_123",
-  "orderId": "ord_123",
-  "status": "AUTHORIZED",
-  "currency": "USD",
-  "amount": "159.98"
-}
-~~~
-
-Use signed webhooks from the payment provider, verify signatures and timestamps, deduplicate webhook event IDs, and reconcile with the provider when a timeout leaves the result unknown. A timeout does **not** prove that a payment failed.
-
-### Order state machine
-
-~~~mermaid
-stateDiagram-v2
-    [*] --> PENDING
-    PENDING --> CONFIRMED: stock reserved + payment authorized
-    PENDING --> FAILED: validation or payment failure
-    PENDING --> CANCELLED: checkout expired
-    CONFIRMED --> FULFILLING
-    FULFILLING --> SHIPPED
-    SHIPPED --> DELIVERED
-    CONFIRMED --> CANCELLED: cancellation accepted
-    DELIVERED --> RETURN_REQUESTED
-    RETURN_REQUESTED --> REFUNDED: return approved and refund settled
-    FAILED --> [*]
-    CANCELLED --> [*]
-    DELIVERED --> [*]
-    REFUNDED --> [*]
-~~~
-
-Every transition should validate the current state and be safe to retry. Keep an auditable history for important transitions. Cancellation, stock release and refunds are workflows—not just a status-field update.
-
----
-
-## 21. 🧭 Consistency by feature — make the trade-off explicit
-
-| Feature | Suggested consistency | Reason |
-|---|---|---|
-| Product description and category | Eventual consistency is usually acceptable | A short indexing/cache delay is tolerable |
-| Search results | Eventual consistency | Search is a derived index and may lag |
-| Cart | Read-your-writes where practical | Customers expect their own edits to appear |
-| Available inventory at checkout | Atomic, strongly coordinated reservation | Avoid selling the same unit twice |
-| Payment status | Durable, idempotent state transitions plus reconciliation | External payment outcomes can be delayed or ambiguous |
-| Order state | Transactional updates with explicit allowed transitions | Prevent contradictory lifecycle states |
-| Analytics and recommendation events | Eventual consistency | Delayed aggregation does not block checkout |
-
-Do not describe the entire platform as “strongly consistent” or “eventually consistent.” State which operation needs which guarantee, and explain how the application behaves when the guarantee cannot be provided.
-
----
-
-## 22. 🚨 Example alerts and operational targets
-
-The following are starting examples, not universal thresholds. Tune them to the service's SLO, normal traffic and customer impact.
-
-| Alert | Example trigger | First response |
-|---|---|---|
-| API latency | p95 exceeds the SLO for 5–10 minutes | Check traces, dependency latency and recent deployments |
-| API errors | 5xx rate rises above baseline | Check service health, saturation and dependency failures |
-| Inventory conflicts | Sudden rise in reservation failures | Check stock levels, hot SKUs and sale traffic |
-| Payment uncertainty | Provider timeouts or reconciliation backlog rises | Pause unsafe retries and reconcile provider state |
-| Queue backlog | Oldest message age exceeds processing objective | Check consumer health, throughput and poison messages |
-| Replica lag | Lag exceeds the application's read freshness requirement | Route critical reads safely and inspect replication health |
-| Storage capacity | Forecast indicates low remaining headroom | Expand safely, reduce retention where permitted, or partition |
-| Cache failure | Hit ratio collapses or connection errors spike | Protect the database from a cache-miss storm |
-
-Use runbooks that specify an owner, diagnostic steps, rollback options and customer communication. An alert that nobody can act on is noise.
-
----
-
-## 23. 🎨 One-page mental model
-
-~~~mermaid
-flowchart LR
-    U["🔵 Customer"] --> B["🟢 Browse"] --> C["🟠 Cache / Search"] 
-    U --> CO["🔴 Checkout"] --> I["🔴 Atomic stock reservation"] --> P["🔴 Idempotent payment"] --> O["🟠 Durable order state"]
-    O --> E[["🟣 Outbox + event bus"]] --> F["🟢 Fulfillment / email / analytics"]
-    MON["🔭 Metrics + logs + traces"] -. observes .-> B
-    MON -. observes .-> CO
-    MON -. observes .-> I
-    MON -. observes .-> P
-    classDef user fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:2px;
-    classDef browse fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:2px;
-    classDef store fill:#ffedd5,stroke:#ea580c,color:#7c2d12,stroke-width:2px;
-    classDef critical fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px;
-    classDef async fill:#f3e8ff,stroke:#9333ea,color:#581c87,stroke-width:2px;
-    class U user;
-    class B,F browse;
-    class C,O store;
-    class CO,I,P critical;
-    class E async;
-~~~
-
-The core design principle is simple: **make browsing fast, make checkout correct, make background work durable, and make failures observable.** Add complexity only when the requirements or measured bottlenecks justify it.
-
-#Amazon #ECommerce #SystemDesign #SystemDesignInterview #DistributedSystems #DatabaseDesign #Caching #Replication #Sharding #ConsistentHashing #CAPTheorem #HighAvailability #Scalability #PerformanceOptimization #API #Security #Observability #BackendEngineering #SoftwareArchitecture #InterviewPrep
+#SystemDesign #SystemDesignInterview #BeginnerFriendly #InterviewPreparation #SoftwareEngineering #BackendEngineering #HighLevelDesign #DatabaseDesign #API #Caching #Scalability #HighAvailability #CAPTheorem #DistributedSystems #TechInterviews
