@@ -57,6 +57,21 @@ The notes use a consistent colorful and easy-to-follow format:
 | 21 | [Architecture + GenAI/RAG + Python](20-Architecture-GenAI-Python-Principal-QA.md) | Events, CAP, hybrid RAG, tenant isolation, Python async/resilience |
 | 22 | [SQL + Azure PaaS + ADF](21-SQL-Azure-PaaS-ADF-Architect-QA.md) | SQL tuning, PaaS incidents, managed identity, DR, schema drift, pipeline quality |
 
+## 🎨 Visual Articles & Beginner Roadmaps
+
+Explore the colorful, beginner-friendly guides with blue/yellow flowchart boxes, real-world examples, and simple Hinglish explanations for difficult terms.
+
+| Guide | What you'll learn |
+|---|---|
+| [🟩 NVIDIA AI & GPU Stack](articles/nvidia-ai-gpu-stack.md) | GPU, CUDA, cuDNN, TensorRT, NCCL, NeMo, NIM and inference serving |
+| [🟨 Data Analyst Roadmap](articles/data-analyst-roadmap.md) | Python, NumPy, pandas, SQL, data cleaning, charts and portfolio projects |
+| [🟦 30-Day DSA Roadmap](articles/30-day-dsa-roadmap.md) | Data structures, Big O, algorithms and a 30-day practice plan |
+| [🟥 DSA Interview Template](articles/dsa-interview-template.md) | Clarify, think aloud, brute force, optimize, code, dry run and edge cases |
+
+📚 **[Open the full visual articles index](articles/README.md)**
+
+🎥 Related video: [DSA Interview Template — YouTube Short](https://youtube.com/shorts/9IO1mewQah0?si=IYnkDZs2uxsb0x5R) · [YouTube channel](https://youtube.com/@mohammad-pse)
+
 ## 🧠 DSA — LeetCode Top Interview 150
 
 Use the **official LeetCode Top Interview 150** as the canonical problem list: [LeetCode Top Interview 150](https://leetcode.com/studyplan/top-interview-150/).
