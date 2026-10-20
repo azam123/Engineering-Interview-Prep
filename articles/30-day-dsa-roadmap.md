@@ -1,5 +1,14 @@
 # 🟦 30-Day DSA Roadmap: Aim for 90–100 Problems
 
+<div align="center">
+
+[![Coding Interviews](https://img.shields.io/badge/Coding-Interview%20Prep-2563EB?style=for-the-badge)](#)
+[![DSA](https://img.shields.io/badge/DSA-Problem%20Solving-FACC15?style=for-the-badge&labelColor=1E3A8A)](https://leetcode.com/studyplan/top-interview-150/)
+[![Clean Code](https://img.shields.io/badge/Clean-Code-16A34A?style=for-the-badge)](#)
+[![Checklist](https://img.shields.io/badge/Format-Step--by--Step-0EA5E9?style=for-the-badge)](#)
+
+</div>
+
 DSA means Data Structures and Algorithms. This plan helps you build a practice habit instead of solving random problems without understanding the pattern.
 
 [⬅ Articles index](README.md) · [Main repository](../README.md) · [YouTube channel](https://youtube.com/@mohammad-pse)
