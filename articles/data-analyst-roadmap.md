@@ -1,5 +1,14 @@
 # 🟨 Data Analyst Roadmap for Beginners
 
+<div align="center">
+
+[![DSA](https://img.shields.io/badge/DSA-30--Day%20Roadmap-2563EB?style=for-the-badge)](https://leetcode.com/studyplan/top-interview-150/)
+[![Practice](https://img.shields.io/badge/Practice-90--100%20Target-FACC15?style=for-the-badge&labelColor=1E3A8A)](#)
+[![Algorithms](https://img.shields.io/badge/Algorithms-Patterns-16A34A?style=for-the-badge)](#)
+[![Level](https://img.shields.io/badge/Level-Beginner--Intermediate-0EA5E9?style=for-the-badge)](#)
+
+</div>
+
 Learn to collect, clean, analyze, and visualize data — then explain the findings through projects.
 
 [⬅ Articles index](README.md) · [Main repository](../README.md) · [YouTube channel](https://youtube.com/@mohammad-pse)
