@@ -2,10 +2,10 @@
 
 <div align="center">
 
-[![DSA](https://img.shields.io/badge/DSA-30--Day%20Roadmap-2563EB?style=for-the-badge)](https://leetcode.com/studyplan/top-interview-150/)
-[![Practice](https://img.shields.io/badge/Practice-90--100%20Target-FACC15?style=for-the-badge&labelColor=1E3A8A)](#)
-[![Algorithms](https://img.shields.io/badge/Algorithms-Patterns-16A34A?style=for-the-badge)](#)
-[![Level](https://img.shields.io/badge/Level-Beginner--Intermediate-0EA5E9?style=for-the-badge)](#)
+[![Data Analytics](https://img.shields.io/badge/Data-Analytics-2563EB?style=for-the-badge&logo=googleanalytics&logoColor=white)](#)
+[![Python](https://img.shields.io/badge/Python-Analysis-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![SQL](https://img.shields.io/badge/SQL-Querying-FACC15?style=for-the-badge&labelColor=1E3A8A)](https://sqlbolt.com/)
+[![Level](https://img.shields.io/badge/Level-Beginner-16A34A?style=for-the-badge)](#)
 
 </div>
 
@@ -150,3 +150,7 @@ Publish the question, source, cleaning decisions, analysis, charts, and conclusi
 - [SQLBolt interactive lessons](https://sqlbolt.com/)
 
 [⬆ Articles index](README.md)
+
+## 🏷️ Tags
+
+`Data-Analytics` `Data-Analyst-Roadmap` `Python` `NumPy` `pandas` `Matplotlib` `SQL` `Data-Cleaning` `Data-Visualization` `Charts` `Beginner` `Hinglish`
