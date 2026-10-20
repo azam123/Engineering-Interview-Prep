@@ -1,5 +1,14 @@
 # 🎨 Visual Learning Articles
 
+<div align="center">
+
+[![NVIDIA AI](https://img.shields.io/badge/NVIDIA-AI%20Stack-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://developer.nvidia.com/)
+[![GPU](https://img.shields.io/badge/GPU-Computing-2563EB?style=for-the-badge)](https://developer.nvidia.com/cuda-toolkit)
+[![Level](https://img.shields.io/badge/Level-Beginner--Intermediate-FACC15?style=for-the-badge&labelColor=1E3A8A)](#)
+[![Topics](https://img.shields.io/badge/Topics-CUDA%20%7C%20TensorRT%20%7C%20NIM-0EA5E9?style=for-the-badge)](#)
+
+</div>
+
 Simple explanations, colorful diagrams, practical roadmaps, and Hinglish notes for difficult terms.
 
 ## 🧭 Choose a guide
