@@ -2,8 +2,8 @@
 
 <div align="center">
 
-[![Visual Guides](https://img.shields.io/badge/Visual-Learning%20Guides-2563EB?style=for-the-badge)](#)
-[![Beginner Friendly](https://img.shields.io/badge/Beginner-Friendly-16A34A?style=for-the-badge)](#)
+[![Coding Interview](https://img.shields.io/badge/Coding-Interview%20Prep-2563EB?style=for-the-badge)](#)
+[![Clean Code](https://img.shields.io/badge/Clean-Code-16A34A?style=for-the-badge)](#)
 [![Hinglish](https://img.shields.io/badge/Explanations-Simple%20%2B%20Hinglish-FACC15?style=for-the-badge&labelColor=1E3A8A)](#)
 [![Mermaid](https://img.shields.io/badge/Diagrams-Mermaid-0EA5E9?style=for-the-badge)](https://mermaid.js.org/)
 
@@ -163,3 +163,7 @@ Discuss trade-offs, alternate approaches, reducing memory, and whether sorting i
 [Follow the YouTube channel](https://youtube.com/@mohammad-pse)
 
 [⬆ Articles index](README.md)
+
+## 🏷️ Tags
+
+`DSA` `Coding-Interview` `Interview-Template` `Brute-Force` `Optimization` `Time-Complexity` `Space-Complexity` `Clean-Code` `Edge-Cases` `CSharp` `Hinglish`
