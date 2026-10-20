@@ -1,5 +1,14 @@
 # 🟩 NVIDIA AI & GPU Stack — Simple Guide
 
+<div align="center">
+
+[![Data Analytics](https://img.shields.io/badge/Data-Analytics-2563EB?style=for-the-badge&logo=googleanalytics&logoColor=white)](#)
+[![Python](https://img.shields.io/badge/Python-Analysis-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![SQL](https://img.shields.io/badge/SQL-Querying-FACC15?style=for-the-badge&labelColor=1E3A8A)](https://sqlbolt.com/)
+[![Level](https://img.shields.io/badge/Level-Beginner-16A34A?style=for-the-badge)](#)
+
+</div>
+
 From GPU hardware to AI applications: understand what each layer does and when it is useful.
 
 [⬅ Articles index](README.md) · [Main repository](../README.md) · [YouTube channel](https://youtube.com/@mohammad-pse)
