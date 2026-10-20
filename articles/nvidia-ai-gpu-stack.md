@@ -2,10 +2,10 @@
 
 <div align="center">
 
-[![Data Analytics](https://img.shields.io/badge/Data-Analytics-2563EB?style=for-the-badge&logo=googleanalytics&logoColor=white)](#)
-[![Python](https://img.shields.io/badge/Python-Analysis-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![SQL](https://img.shields.io/badge/SQL-Querying-FACC15?style=for-the-badge&labelColor=1E3A8A)](https://sqlbolt.com/)
-[![Level](https://img.shields.io/badge/Level-Beginner-16A34A?style=for-the-badge)](#)
+[![NVIDIA](https://img.shields.io/badge/NVIDIA-AI%20Stack-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://developer.nvidia.com/)
+[![CUDA](https://img.shields.io/badge/CUDA-GPU%20Computing-2563EB?style=for-the-badge)](https://developer.nvidia.com/cuda-toolkit)
+[![AI Inference](https://img.shields.io/badge/AI-Inference-FACC15?style=for-the-badge&labelColor=1E3A8A)](https://developer.nvidia.com/tensorrt)
+[![Level](https://img.shields.io/badge/Level-Beginner--Intermediate-0EA5E9?style=for-the-badge)](#)
 
 </div>
 
@@ -112,3 +112,7 @@ A system may use a machine-learning framework to load the model, CUDA libraries 
 - [NVIDIA NIM](https://developer.nvidia.com/nim)
 
 [⬆ Articles index](README.md)
+
+## 🏷️ Tags
+
+`NVIDIA` `GPU` `CUDA` `cuDNN` `TensorRT` `NCCL` `Triton` `NeMo` `NIM` `AI-Inference` `Generative-AI` `Machine-Learning` `Hinglish`
