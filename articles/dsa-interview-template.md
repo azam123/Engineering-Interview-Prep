@@ -1,5 +1,14 @@
 # 🟥 DSA Interview Template: Step-by-Step Framework
 
+<div align="center">
+
+[![Visual Guides](https://img.shields.io/badge/Visual-Learning%20Guides-2563EB?style=for-the-badge)](#)
+[![Beginner Friendly](https://img.shields.io/badge/Beginner-Friendly-16A34A?style=for-the-badge)](#)
+[![Hinglish](https://img.shields.io/badge/Explanations-Simple%20%2B%20Hinglish-FACC15?style=for-the-badge&labelColor=1E3A8A)](#)
+[![Mermaid](https://img.shields.io/badge/Diagrams-Mermaid-0EA5E9?style=for-the-badge)](https://mermaid.js.org/)
+
+</div>
+
 Use the same clear process for coding interviews: understand the problem, explain your approach, compare solutions, code carefully, and test.
 
 [⬅ Articles index](README.md) · [Main repository](../README.md) · [YouTube channel](https://youtube.com/@mohammad-pse)
