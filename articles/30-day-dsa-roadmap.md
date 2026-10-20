@@ -2,10 +2,10 @@
 
 <div align="center">
 
-[![Coding Interviews](https://img.shields.io/badge/Coding-Interview%20Prep-2563EB?style=for-the-badge)](#)
-[![DSA](https://img.shields.io/badge/DSA-Problem%20Solving-FACC15?style=for-the-badge&labelColor=1E3A8A)](https://leetcode.com/studyplan/top-interview-150/)
-[![Clean Code](https://img.shields.io/badge/Clean-Code-16A34A?style=for-the-badge)](#)
-[![Checklist](https://img.shields.io/badge/Format-Step--by--Step-0EA5E9?style=for-the-badge)](#)
+[![DSA](https://img.shields.io/badge/DSA-30--Day%20Roadmap-2563EB?style=for-the-badge)](https://leetcode.com/studyplan/top-interview-150/)
+[![Practice](https://img.shields.io/badge/Practice-90--100%20Target-FACC15?style=for-the-badge&labelColor=1E3A8A)](#)
+[![Algorithms](https://img.shields.io/badge/Algorithms-Patterns-16A34A?style=for-the-badge)](#)
+[![Level](https://img.shields.io/badge/Level-Beginner--Intermediate-0EA5E9?style=for-the-badge)](#)
 
 </div>
 
@@ -127,3 +127,7 @@ Record the topic, pattern, whether you solved it independently, complexity, edge
 [▶ DSA Interview Template on YouTube Shorts](https://youtube.com/shorts/9IO1mewQah0?si=IYnkDZs2uxsb0x5R)
 
 [⬆ Articles index](README.md)
+
+## 🏷️ Tags
+
+`DSA` `Data-Structures` `Algorithms` `Big-O` `LeetCode` `Coding-Interview` `30-Day-Plan` `Problem-Solving` `Dynamic-Programming` `Hinglish`
