@@ -6,6 +6,13 @@
 
 > Learn the complete RAG pipeline: ingestion → extraction and cleaning → tokenization-aware chunking → embeddings → vector store → query embedding → retrieval → prompt construction → LLM response → citations and evaluation.
 
+[![RAG Pipeline](https://img.shields.io/badge/Topic-RAG%20Pipeline-7C3AED?style=for-the-badge)](#what-is-rag)
+[![Step by Step](https://img.shields.io/badge/Guide-Step--by--Step-2563EB?style=for-the-badge)](#step-1--ingestion-collect-and-track-source-documents)
+[![Python Examples](https://img.shields.io/badge/Code-Python%20Examples-3776AB?style=for-the-badge&logo=python&logoColor=white)](#step-1--ingestion-collect-and-track-source-documents)
+[![Production Ready Concepts](https://img.shields.io/badge/Focus-Production%20Concepts-16A34A?style=for-the-badge)](#production-checklist)
+
+**GitHub topics/tags:** `rag` `retrieval-augmented-generation` `genai` `llm` `python` `embeddings` `vector-database` `chromadb` `prompt-engineering` `semantic-search` `production-ai` `ai-engineering`
+
 ## 🎯 What is RAG?
 
 **Retrieval-Augmented Generation (RAG)** lets an application retrieve relevant information from your own knowledge sources and provide it to a language model as context before the model answers.
@@ -57,9 +64,15 @@ flowchart TB
 
 ## 🔢 Step 1 — Ingestion: collect and track source documents
 
+**Simple English:** Ingestion is the step where your application reads documents from their original locations and prepares them for processing.
+
+**Hinglish:** Ingestion ka matlab hai apne PDFs, text files, SharePoint ya database se data ko pipeline mein lana. Jaise library mein books receive karke unka record banana.
+
 Ingestion means bringing documents into a controlled pipeline. Sources may include PDF files, Word documents, web pages, database records, SharePoint, or internal APIs.
 
 A production ingestion job should record a stable source ID, version or content hash, timestamp, tenant, and access-control metadata. Do not index a document before its authorization rules are understood.
+
+**Python example — what it does:** the function below reads a text file, rejects empty input, and creates a SHA-256 content hash so later ingestion runs can detect unchanged content.
 
 For a small local example, start with a text file:
 
@@ -92,6 +105,12 @@ print(document["metadata"])
 
 ## 🧹 Step 2 — Text extraction and cleaning
 
+**Simple English:** Documents often contain formatting noise. Extraction gets the readable content; cleaning removes unwanted noise while preserving meaning.
+
+**Hinglish:** PDF ya Word file se useful text nikaalo, extra spaces aur unwanted line breaks hatao—but headings, tables aur important information ko delete mat karo.
+
+**Python example — what it does:** the function below normalizes whitespace and removes null characters. Real document parsers should preserve page and section boundaries.
+
 Extract text while preserving useful structure: headings, tables, page numbers, section names, and source URLs. Remove repeated headers/footers carefully; do not remove meaningful policy text or table labels.
 
 ```python
@@ -109,6 +128,10 @@ cleaned = clean_text(document["text"])
 Keep source coordinates when possible, such as page number, heading, URL, and character offsets. These metadata fields make citations and debugging possible.
 
 ## 🔤 Step 3 — Tokenization: what the model actually counts
+
+**Simple English:** Tokenization breaks text into model-readable units so you can estimate input limits and cost.
+
+**Hinglish:** Model text ko words ke bajaye chhote pieces, yani tokens, mein count karta hai. Isliye 100 words ka matlab hamesha 100 tokens nahi hota.
 
 A **token** is a unit used by a model tokenizer. It may be a word, part of a word, punctuation, or other text unit. A token is not always equal to one word. Different models can use different tokenizers.
 
@@ -130,6 +153,10 @@ print("Decoded:", encoding.decode(token_ids))
 Use the tokenizer recommended for your chosen embedding and generation models. The example tokenizer above is illustrative; do not assume it matches every model.
 
 ## ✂️ Step 4 — Chunking: split documents into retrievable units
+
+**Simple English:** Chunking splits a long document into smaller passages that can be searched independently.
+
+**Hinglish:** Bade document ko chhote, meaningful parts mein baantna chunking hai. Overlap rakhne se boundary par sentence ka context lose hone ka risk kam hota hai.
 
 Embedding an entire large document can make retrieval imprecise and may exceed model limits. Chunking splits content into smaller pieces. Each chunk should be meaningful on its own while retaining enough surrounding context.
 
@@ -166,6 +193,10 @@ This splitter's `chunk_size` is measured in characters unless you configure a to
 
 ## 🏷️ Step 5 — Metadata and authorization
 
+**Simple English:** Metadata describes each chunk—where it came from, which version it belongs to, and who is allowed to read it.
+
+**Hinglish:** Har chunk ke saath label lagao: source, page, version, tenant aur permissions. Sirf prompt mein bolna enough nahi hai; access check retrieval se pehle lagna chahiye.
+
 Metadata should support filtering, traceability, and citations. A chunk might look like this:
 
 ```python
@@ -186,6 +217,10 @@ chunk_record = {
 **Critical security rule:** enforce access-control and tenant filters in the retrieval query, before any chunk is sent to the LLM. Do not rely on the prompt to keep unauthorized information secret. For complicated ACLs, resolve the user's effective permissions server-side and test for cross-tenant leakage.
 
 ## 🧮 Step 6 — Embeddings: text becomes a vector
+
+**Simple English:** An embedding model converts text into a list of numbers that represents semantic meaning for similarity search.
+
+**Hinglish:** Embedding text ko numbers ki list (vector) mein convert karta hai. Similar meaning wale texts aksar vector space mein ek doosre ke paas hote hain.
 
 An embedding model maps text into a numeric vector. Similar meanings tend to have vectors that are close under the model's similarity metric. Embeddings are not summaries and do not store knowledge in a human-readable format.
 
@@ -212,6 +247,10 @@ print("Vector dimensions:", len(sample_vectors[0]))
 Use the **same embedding model and compatible preprocessing** for indexed chunks and user queries. If you change the embedding model, plan a re-embedding/re-indexing migration. Keep API keys in a secret manager or environment variables; never commit them.
 
 ## 🗄️ Step 7 — Vector store: persist vectors, chunks, and metadata
+
+**Simple English:** A vector store saves vectors and associated chunks so the application can search them later.
+
+**Hinglish:** Vector store ek searchable library ki tarah hai. Ismein vectors ke saath original text aur metadata bhi rakhte hain, taaki relevant chunk milne par actual content bhi mil sake.
 
 A vector store indexes embeddings and returns nearby vectors for a query. In production, choose a store based on filtering, hybrid search, scale, latency, availability, access controls, operations, and cost—not only raw vector similarity.
 
@@ -259,6 +298,10 @@ For larger collections, batch upserts, apply rate limits, retry transient failur
 
 ## ❓ Step 8 — User question and query embedding
 
+**Simple English:** At query time, validate the user's question and convert it into a vector using the same embedding model as the indexed documents.
+
+**Hinglish:** User ka sawaal aane par usko bhi vector mein badlo. Document aur query ke embeddings compatible hone chahiye, warna similarity search unreliable ho sakti hai.
+
 At question time, normalize and validate the user query, authenticate the caller, resolve their permissions, and embed the query using the same embedding model used for documents.
 
 ```python
@@ -274,6 +317,10 @@ query_vector = embed_query(question)
 In production, set input-length limits, request timeouts, per-user rate limits, and safe handling for provider errors. Do not log secrets or unnecessary personal data.
 
 ## 🔍 Step 9 — Retrieval: find relevant chunks
+
+**Simple English:** Retrieval searches the index and returns the passages most relevant to the question, subject to the user's permissions.
+
+**Hinglish:** User ke sawaal ke hisaab se top relevant chunks dhoondo. Production mein tenant aur permission filters pehle apply karo, phir results ko rerank ya deduplicate kar sakte ho.
 
 The simplest retrieval strategy is dense vector similarity. Retrieve more candidates than you intend to include in the final prompt, then optionally filter, deduplicate, rerank, and trim them.
 
@@ -308,6 +355,10 @@ Distance semantics depend on the store and metric. For cosine distance, smaller 
 - **Evaluation:** measure recall@K, MRR/nDCG, and answer quality on a representative test set.
 
 ## 🧩 Step 10 — Prompt engineering: construct a grounded prompt
+
+**Simple English:** Prompt engineering tells the LLM what task to perform, which retrieved evidence to use, how to cite it, and when to abstain.
+
+**Hinglish:** LLM ko clear instructions do: jawab retrieved context se hi dena, source cite karna, aur evidence na mile toh guess nahi karna. Retrieved document ke andar likhe instructions ko trusted system rules mat samjho.
 
 Prompt engineering is not a replacement for retrieval or authorization. It communicates the task, defines how evidence should be used, asks for citations, and specifies what to do when evidence is insufficient.
 
@@ -344,6 +395,10 @@ ANSWER:
 
 ## 🤖 Step 11 — LLM generation
 
+**Simple English:** The LLM reads the question and retrieved context and drafts an answer according to the application's instructions.
+
+**Hinglish:** Ab model question aur relevant chunks ko padhkar answer banata hai. LLM answer generate karta hai, lekin answer correct hai yeh automatically guaranteed nahi hota.
+
 Send the constructed prompt to a model, with bounded output tokens and a timeout. This example uses the OpenAI Python SDK; replace the provider call with your approved model endpoint if needed.
 
 ```python
@@ -379,6 +434,10 @@ Model names and SDK parameters can change; pin and test SDK versions and configu
 
 ## 📚 Step 12 — Return citations and validate the answer
 
+**Simple English:** Return source information alongside the answer and verify that cited IDs really belong to the retrieved evidence.
+
+**Hinglish:** Answer ke saath source file/page bhi do. Model ne jo citation likha hai usko validate karo—fake ya retrieved set ke bahar ka source accept mat karo.
+
 Return source references as structured data, not only as text generated by the model. A stronger design asks the model for structured citation IDs, verifies each ID against the retrieved set, and renders links using trusted application metadata.
 
 ```python
@@ -404,6 +463,10 @@ print(result)
 This sample returns the retrieved sources as a starting point. It does **not** prove that every claim in the answer is supported. For robust citations, require claim-to-source mappings, validate source IDs, and evaluate citation precision and coverage.
 
 ## 🧪 Step 13 — Evaluation and observability
+
+**Simple English:** Evaluation measures whether retrieval and answers are good; observability helps diagnose quality, latency, failures, and cost in production.
+
+**Hinglish:** Sirf demo chalna enough nahi. Check karo sahi chunk mil raha hai ya nahi, answer grounded hai ya nahi, latency/cost kitni hai, aur security failures toh nahi ho rahe.
 
 Do not ship a RAG system based on a few successful manual tests. Create a versioned evaluation set containing realistic questions, expected evidence, acceptable answers, unanswerable questions, and access-control cases.
 
