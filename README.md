@@ -67,6 +67,7 @@ Explore the colorful, beginner-friendly guides with blue/yellow flowchart boxes,
 | [🟨 Data Analyst Roadmap](articles/data-analyst-roadmap.md) | Python, NumPy, pandas, SQL, data cleaning, charts and portfolio projects |
 | [🟦 30-Day DSA Roadmap](articles/30-day-dsa-roadmap.md) | Data structures, Big O, algorithms and a 30-day practice plan |
 | [🟥 DSA Interview Template](articles/dsa-interview-template.md) | Clarify, think aloud, brute force, optimize, code, dry run and edge cases |
+| [🌈 Production RAG Pipeline with Python](articles/rag-pipeline-step-by-step-python.md) | Ingestion, tokenization, chunking, embeddings, vector search, prompt engineering, citations, security and evaluation |
 
 📚 **[Open the full visual articles index](articles/README.md)**
 
